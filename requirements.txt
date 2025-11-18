@@ -1,2 +1,2 @@
 # Core dependencies for Tutto MCP Server
-fastmcp>=0.1.0
+fastmcp>=2.13.0
