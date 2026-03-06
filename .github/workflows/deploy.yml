@@ -41,6 +41,7 @@ jobs:
       - name: Push Docker Image
         run: |
           docker push ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/artefacts/${{ vars.SERVICE_NAME }}:latest
+          docker push ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/artefacts/${{ vars.SERVICE_NAME }}:${{ github.run_number }}
 
   deploy-hml:
     name: Deploy to HML
