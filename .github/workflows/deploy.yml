@@ -52,6 +52,7 @@ jobs:
     name: Deploy to HML
     needs: build-and-push
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    environment: hml
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -78,6 +79,7 @@ jobs:
     name: Deploy to PRD
     needs: deploy-hml
     if: github.ref == 'refs/heads/main'
+    environment: prd
     runs-on: ubuntu-latest
     defaults:
       run:
