@@ -26,4 +26,4 @@ COPY src/ ./src/
 ENV PORT=8080
 
 # Iniciar via FastMCP CLI forçando o protocolo SSE para ambientes serverless
-CMD fastmcp run src/main.py --transport sse --host 0.0.0.0 --port $PORT
+CMD fastmcp run src/main.py:mcp --transport sse --host 0.0.0.0 --port $PORT
