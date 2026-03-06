@@ -30,17 +30,21 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}-registry/${{ vars.SERVICE_NAME }}:${{ github.sha }} .
+          docker build -t ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/artefacts/${{ vars.SERVICE_NAME }}:${{ github.run_number }} .
 
       - name: Push Docker Image
         run: |
-          docker push ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}-registry/${{ vars.SERVICE_NAME }}:${{ github.sha }}
+          docker push ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/artefacts/${{ vars.SERVICE_NAME }}:${{ github.run_number }}
 
   deploy-hml:
     name: Deploy to HML
     needs: build-and-push
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     environment: hml
+    env:
+      TF_VAR_project_id: ${{ vars.PROJECT_ID }}
+      TF_VAR_service_name: ${{ vars.SERVICE_NAME }}
+      TF_VAR_environment: hml
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -58,16 +62,23 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        run: terraform init -backend-config="prefix=${{ vars.SERVICE_NAME }}-hml" -backend-config="bucket=${{ vars.PROJECT_ID }}-tfstate"
+        run: terraform init -backend-config="bucket=${{ vars.PROJECT_ID }}-tfstate" -backend-config="prefix=${{ vars.PROJECT_ID }}/${{ vars.SERVICE_NAME }}/${{ vars.ENVIRONMENT }}" -reconfigure
+
+      - name: Terraform Plan HML
+        run: terraform plan -var="environment=hml" -var="project_id=${{ vars.PROJECT_ID }}" -var="image_tag=${{ github.run_number }}"
 
       - name: Terraform Apply HML
-        run: terraform apply -auto-approve -var="environment=hml" -var="project_id=${{ vars.PROJECT_ID }}" -var="image_tag=${{ github.sha }}"
+        run: terraform apply -auto-approve -var="environment=hml" -var="project_id=${{ vars.PROJECT_ID }}" -var="image_tag=${{ github.run_number }}"
 
   deploy-prod:
     name: Deploy to PRD
     needs: deploy-hml
     if: github.ref == 'refs/heads/main'
     environment: prd
+    env:
+      TF_VAR_project_id: ${{ vars.PROJECT_ID }}
+      TF_VAR_service_name: ${{ vars.SERVICE_NAME }}
+      TF_VAR_environment: prd
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -85,7 +96,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        run: terraform init -backend-config="prefix=${{ vars.SERVICE_NAME }}-prd" -backend-config="bucket=${{ vars.PROJECT_ID }}-tfstate"
+        run: terraform init -backend-config="bucket=${{ vars.PROJECT_ID }}-tfstate" -backend-config="prefix=${{ vars.PROJECT_ID }}/${{ vars.SERVICE_NAME }}/${{ vars.ENVIRONMENT }}" -reconfigure
 
       - name: Terraform Apply PRD
-        run: terraform apply -auto-approve -var="environment=prd" -var="project_id=${{ vars.PROJECT_ID }}" -var="image_tag=${{ github.sha }}"
+        run: terraform apply -auto-approve -var="environment=prd" -var="project_id=${{ vars.PROJECT_ID }}" -var="image_tag=${{ github.run_number }}"

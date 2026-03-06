@@ -10,3 +10,5 @@ resource "google_secret_manager_secret_iam_binding" "mongodb_connection_string_a
     "serviceAccount:${google_service_account.component_sa.email}",
   ]
 }
+
+

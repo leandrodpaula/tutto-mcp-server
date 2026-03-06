@@ -69,6 +69,17 @@ resource "google_cloud_run_v2_service_iam_member" "noauth" {
   member   = "serviceAccount:${google_service_account.component_sa.email}"
 }
 
+# Permissao publica para invocar o serviço
+resource "google_cloud_run_v2_service_iam_member" "public" {
+  location = google_cloud_run_v2_service.default.location
+  name     = google_cloud_run_v2_service.default.name
+  project  = google_cloud_run_v2_service.default.project
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+
+
 output "service_url" {
   value       = google_cloud_run_v2_service.default.uri
   description = "A URL pública do Tutto MCP Server"
