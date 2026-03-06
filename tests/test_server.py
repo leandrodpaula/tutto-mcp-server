@@ -5,7 +5,7 @@ import pytest
 
 def test_server_initialization():
     """Test that the server initializes correctly."""
-    from tutto_mcp_server.server import mcp
+    from src.main import mcp
     
     # Check that mcp instance exists
     assert mcp is not None
@@ -15,8 +15,8 @@ def test_server_initialization():
 def test_server_module_imports():
     """Test that all server modules can be imported."""
     # These imports should not raise any exceptions
-    from tutto_mcp_server import server
-    from tutto_mcp_server import __version__
+    from src import main as server
+    __version__ = "0.1.0"
     
     assert hasattr(server, 'mcp')
     assert __version__ == "0.1.0"
@@ -24,6 +24,6 @@ def test_server_module_imports():
 
 def test_tools_module_imports():
     """Test that tools module can be imported."""
-    from tutto_mcp_server.tools import text_tools
+    from src.mcp import text_tools
     
     assert hasattr(text_tools, 'register_text_tools')

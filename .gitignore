@@ -205,3 +205,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Terraform overrides
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.sh

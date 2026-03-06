@@ -1,176 +1,175 @@
 # Tutto MCP Server
 
-Um servidor MCP (Model Context Protocol) implementado em Python usando FastMCP.
+Um servidor MCP (Model Context Protocol) implementado em Python usando FastMCP. O protocolo MCP (Model Context Protocol) permite que modelos de linguagem interajam com ferramentas e recursos externos de forma padronizada.
 
-## 📋 Descrição
-
-Este projeto implementa um servidor MCP utilizando o framework FastMCP, fornecendo uma estrutura base para criar ferramentas e recursos que podem ser utilizados por clientes MCP.
+---
 
 ## 🏗️ Estrutura do Projeto
+
+O projeto adota uma arquitetura modular focada no domínio, simplificando a extensão:
 
 ```
 tutto-mcp-server/
 ├── src/
-│   └── tutto_mcp_server/
-│       ├── __init__.py          # Módulo principal do pacote
-│       ├── server.py             # Implementação do servidor MCP
-│       └── tools/                # Diretório para ferramentas customizadas
-├── tests/                        # Testes unitários
-├── pyproject.toml                # Configuração do projeto e dependências
-├── requirements.txt              # Dependências de produção
-├── requirements-dev.txt          # Dependências de desenvolvimento
-└── README.md                     # Este arquivo
+│   ├── core/                  # Configurações globais e inicialização de banco de dados
+│   ├── models/                # Modelos de dados e schemas de validação (ex: tenant.py)
+│   ├── repositories/          # Operações diretas no banco de dados (Data Access Layer)
+│   ├── services/              # Lógica e regras de negócio
+│   ├── mcp/                   # Camada de interface do Model Context Protocol (tools, resources)
+│   └── main.py                # Ponto de entrada e inicialização do FastMCP
+├── tests/                     # Testes unitários do servidor e das ferramentas
+├── pyproject.toml             # Configuração do projeto e dependências modernas (uv-ready)
+└── README.md                  # Central de Documentação
 ```
 
-## 🚀 Instalação
+---
 
-### Pré-requisitos
+## 🚀 Instalação e Configuração
 
-- Python 3.10 ou superior
-- pip (gerenciador de pacotes Python)
+O projeto delega o gerenciamento de dependências ao `pyproject.toml`. É fortemente encorajado o uso do **uv** para gerenciar o pacote, garantindo um ambiente ágil.
 
-### Instalação do Pacote
-
-1. Clone o repositório:
+### Clone do repositório
 ```bash
 git clone https://github.com/leandrodpaula/tutto-mcp-server.git
 cd tutto-mcp-server
 ```
 
-2. Crie e ative um ambiente virtual (recomendado):
+### Instalação Simplificada (usando uv)
+
+```bash
+uv venv
+source .venv/bin/activate
+uv pip install -e ".[dev]"
+```
+
+*Alternativamente, usando pip tradicional:*
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # No Windows: .venv\Scripts\activate
-```
-
-3. Instale as dependências:
-```bash
-pip install -e .
-```
-
-Ou para desenvolvimento:
-```bash
+source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-Ou usando requirements.txt:
+Configure suas variáveis de ambiente:
 ```bash
-pip install -r requirements.txt
-# Para desenvolvimento:
-pip install -r requirements-dev.txt
+cp .env.example .env
 ```
+*(Preencha dados como o URI do MongoDB `MONGODB_URL` e o `DATABASE_NAME`)*
+
+---
 
 ## 💻 Uso
 
 ### Executando o Servidor
 
-Você pode executar o servidor de várias formas:
+O script configurado no `pyproject.toml` disponibiliza o comando direto na CLI do seu ambiente virtual:
 
-1. Usando o comando instalado:
 ```bash
 tutto-mcp-server
 ```
 
-2. Como módulo Python:
+Ou, utilizando como módulo Python rodando a partir da raiz:
+
 ```bash
-python -m tutto_mcp_server.server
+python -m src.main
 ```
 
-3. Diretamente:
-```bash
-python src/tutto_mcp_server/server.py
-```
+### Exemplo de Ferramentas Disponíveis
 
-### Ferramentas Disponíveis
-
-O servidor vem com ferramentas de exemplo:
+O servidor vem com ferramentas base que demonstram o roteamento do FastMCP:
 
 - **hello**: Cumprimenta uma pessoa
-  ```python
-  hello(name="João")  # Retorna: "Hello, João! Welcome to Tutto MCP Server."
-  ```
-
 - **add_numbers**: Adiciona dois números
-  ```python
-  add_numbers(a=5, b=3)  # Retorna: 8
-  ```
+- **create_tenant** / **get_tenant**: Exemplos de interação assíncrona com MongoDB.
 
-### Recursos Disponíveis
+### Exemplo de Recursos Disponíveis
 
-- **config://server**: Obtém informações de configuração do servidor
+- **config://server**: Obtém informações de configuração do servidor.
+
+---
+
+## 🏛️ Arquitetura e Fluxo de Dados
+
+A base arquitetural utiliza o **FastMCP** acionando recursos internos baseados na Inversão de Dependência via pacotes no diretório `src/`:
+
+```
+Cliente MCP
+    ↓
+FastMCP Server (src/main.py)
+    ↓
+Tool / Resource Handlers (src/mcp)
+    ↓
+Services (src/services/...) → Models (src/models/...)
+    ↓
+Repositories (src/repositories/...)
+    ↓
+MongoDB (Motor AsyncIO Handler em src/core/)
+```
+
+### Padrões de Design e Extensibilidade
+
+Para adicionar novas ferramentas, crie um módulo dentro de `src/mcp/` (p.ex: `billing_tools.py`) e registre a função com o decorador `@mcp.tool()` através de uma assinatura clara de _type hints_:
+
+```python
+from fastmcp import FastMCP
+
+def register_billing_tools(mcp: FastMCP):
+    @mcp.tool()
+    def calculate_tax(amount: float) -> float:
+        """
+        Calcula os impostos para um valor em BRL.
+        """
+        return amount * 0.15
+```
+
+Registre as novas instâncias importando no `src/main.py` e acoplando-as ao `mcp`.
+
+---
 
 ## 🛠️ Desenvolvimento
 
-### Estrutura de Código
-
-Para adicionar novas ferramentas ao servidor, edite o arquivo `src/tutto_mcp_server/server.py`:
-
-```python
-@mcp.tool()
-def sua_ferramenta(parametro: str) -> str:
-    """
-    Descrição da sua ferramenta.
-    
-    Args:
-        parametro: Descrição do parâmetro
-        
-    Returns:
-        Descrição do retorno
-    """
-    return f"Resultado: {parametro}"
-```
-
 ### Executando Testes
+
+Toda a infraestrutura de testes unitários foi organizada e isolada. Para testar suas lógicas:
 
 ```bash
 pytest
 ```
-
-Com cobertura:
+Para obter o relatório de cobertura:
 ```bash
-pytest --cov=tutto_mcp_server
+pytest --cov=src
 ```
 
-### Formatação de Código
+### Formatação de Código e Typings
+
+O pacote disponibiliza comandos essenciais dos _dependencies_ (`[dev]`):
 
 ```bash
-# Formatar com black
+# Formatar com Black
 black src/ tests/
 
-# Verificar com ruff
+# Teste estático e Linter Rápido
 ruff check src/ tests/
 
-# Type checking com mypy
+# Type checking Estrito
 mypy src/
 ```
 
-## 📦 Dependências
-
-### Principais
-- **fastmcp**: Framework para construção de servidores MCP
-
-### Desenvolvimento
-- **pytest**: Framework de testes
-- **black**: Formatador de código
-- **ruff**: Linter
-- **mypy**: Type checker
+---
 
 ## 🤝 Contribuindo
 
-Contribuições são bem-vindas! Por favor:
-
 1. Faça um fork do projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
+3. Commit suas mudanças (`git commit -m 'feat: Adiciona MinhaFeature'`)
 4. Push para a branch (`git push origin feature/MinhaFeature`)
 5. Abra um Pull Request
 
-## 📄 Licença
+---
 
+## 📄 Licença
 Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
 
 ## 📞 Contato
-
 Leandro D Paula - leandrodpaula@example.com
 
 Link do Projeto: [https://github.com/leandrodpaula/tutto-mcp-server](https://github.com/leandrodpaula/tutto-mcp-server)

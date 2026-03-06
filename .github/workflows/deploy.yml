@@ -1,0 +1,101 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+env:
+  PROJECT_ID: "tutto-assistants"
+  REGION: "southamerica-east1"
+  SERVICE_NAME: "tutto-mcp-server"
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker Auth for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Extract Environment Name
+        id: env_name
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "ENV_NAME=prd" >> $GITHUB_ENV
+          else
+            echo "ENV_NAME=hml" >> $GITHUB_ENV
+          fi
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}-repo-${{ env.ENV_NAME }}/${{ env.SERVICE_NAME }}:${{ env.ENV_NAME }} .
+
+      - name: Push Docker Image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}-repo-${{ env.ENV_NAME }}/${{ env.SERVICE_NAME }}:${{ env.ENV_NAME }}
+
+  deploy-hml:
+    name: Deploy to HML
+    needs: build-and-push
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init -backend-config="prefix=${{ env.SERVICE_NAME }}-hml" -backend-config="bucket=${{ env.PROJECT_ID }}-tfstate"
+
+      - name: Terraform Apply HML
+        run: terraform apply -auto-approve -var="environment=hml" -var="project_id=${{ env.PROJECT_ID }}"
+
+  deploy-prod:
+    name: Deploy to PRD
+    needs: deploy-hml
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init -backend-config="prefix=${{ env.SERVICE_NAME }}-prd" -backend-config="bucket=${{ env.PROJECT_ID }}-tfstate"
+
+      - name: Terraform Apply PRD
+        run: terraform apply -auto-approve -var="environment=prd" -var="project_id=${{ env.PROJECT_ID }}"
