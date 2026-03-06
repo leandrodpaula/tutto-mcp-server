@@ -26,15 +26,15 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker Auth for Artifact Registry
-        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+        run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
 
       - name: Build Docker Image
         run: |
-          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}-registry/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+          docker build -t ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}-registry/${{ vars.SERVICE_NAME }}:${{ github.sha }} .
 
       - name: Push Docker Image
         run: |
-          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}-registry/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          docker push ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}-registry/${{ vars.SERVICE_NAME }}:${{ github.sha }}
 
   deploy-hml:
     name: Deploy to HML
@@ -58,10 +58,10 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        run: terraform init -backend-config="prefix=${{ env.SERVICE_NAME }}-hml" -backend-config="bucket=${{ env.PROJECT_ID }}-tfstate"
+        run: terraform init -backend-config="prefix=${{ vars.SERVICE_NAME }}-hml" -backend-config="bucket=${{ vars.PROJECT_ID }}-tfstate"
 
       - name: Terraform Apply HML
-        run: terraform apply -auto-approve -var="environment=hml" -var="project_id=${{ env.PROJECT_ID }}" -var="image_tag=${{ github.sha }}"
+        run: terraform apply -auto-approve -var="environment=hml" -var="project_id=${{ vars.PROJECT_ID }}" -var="image_tag=${{ github.sha }}"
 
   deploy-prod:
     name: Deploy to PRD
@@ -85,7 +85,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        run: terraform init -backend-config="prefix=${{ env.SERVICE_NAME }}-prd" -backend-config="bucket=${{ env.PROJECT_ID }}-tfstate"
+        run: terraform init -backend-config="prefix=${{ vars.SERVICE_NAME }}-prd" -backend-config="bucket=${{ vars.PROJECT_ID }}-tfstate"
 
       - name: Terraform Apply PRD
-        run: terraform apply -auto-approve -var="environment=prd" -var="project_id=${{ env.PROJECT_ID }}" -var="image_tag=${{ github.sha }}"
+        run: terraform apply -auto-approve -var="environment=prd" -var="project_id=${{ vars.PROJECT_ID }}" -var="image_tag=${{ github.sha }}"
