@@ -25,8 +25,13 @@ resource "google_cloud_run_v2_service" "default" {
       }
 
       env {
-        name  = "MONGODB_URL"
-        value = data.google_secret_manager_secret_version.mongodb_connection_version.secret_data
+        name = "MONGODB_URL"
+        value_source {
+          secret_key_ref {
+            secret  = data.google_secret_manager_secret_version.mongodb_connection_version.secret
+            version = data.google_secret_manager_secret_version.mongodb_connection_version.version
+          }
+        }
       }
 
       env {
