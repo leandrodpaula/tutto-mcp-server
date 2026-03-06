@@ -1,147 +1,157 @@
 # Tutto MCP Server
 
-Um servidor MCP (Model Context Protocol) implementado em Python usando FastMCP. O protocolo MCP (Model Context Protocol) permite que modelos de linguagem interajam com ferramentas e recursos externos de forma padronizada.
+Um servidor MCP (Model Context Protocol) implementado em Python usando FastMCP. O protocolo MCP permite que modelos de linguagem interajam com ferramentas e recursos externos de forma padronizada.
+
+---
+
+## 🎯 O que o projeto faz
+
+O **Tutto MCP Server** atua como uma ponte entre modelos de linguagem e sistemas externos. Ele expõe:
+- **Tools (Ferramentas)**: Funções executáveis que o LLM pode chamar para realizar ações no sistema (ex: salvar/ler dados, realizar cálculos). Exemplo das ferramentas padrão: `hello`, `add_numbers`, `create_tenant` e `get_tenant` (com integração assíncrona com MongoDB).
+- **Resources (Recursos)**: Informações dinâmicas expostas ao modelo na forma de "arquivos textuais ou URIs" (ex: configuração via `config://server`).
+
+A arquitetura possui persistência usando **MongoDB** via driver assíncrono `motor`.
 
 ---
 
 ## 🏗️ Estrutura do Projeto
 
-O projeto adota uma arquitetura modular focada no domínio, simplificando a extensão:
+O projeto adota uma arquitetura modular focada no domínio:
 
-```
+```text
 tutto-mcp-server/
 ├── src/
-│   ├── core/                  # Configurações globais e inicialização de banco de dados
-│   ├── models/                # Modelos de dados e schemas de validação (ex: tenant.py)
-│   ├── repositories/          # Operações diretas no banco de dados (Data Access Layer)
+│   ├── core/                  # Configurações e conexão ao banco de dados (MongoDB)
+│   ├── models/                # Modelos de dados e schemas de validação (Pydantic)
+│   ├── repositories/          # Data Access Layer
 │   ├── services/              # Lógica e regras de negócio
-│   ├── mcp/                   # Camada de interface do Model Context Protocol (tools, resources)
-│   └── main.py                # Ponto de entrada e inicialização do FastMCP
+│   ├── mcp/                   # Camada de interface MCP (Tools e Resources)
+│   └── main.py                # Ponto inicialização do FastMCP
+├── terraform/                 # Infraestrutura as Code (IaC) para GCP
+├── .github/workflows/         # Pipeline CI/CD (GitHub Actions)
 ├── tests/                     # Testes unitários do servidor e das ferramentas
-├── pyproject.toml             # Configuração do projeto e dependências modernas (uv-ready)
-└── README.md                  # Central de Documentação
+├── Dockerfile                 # Configuração para empacotamento em contêiner
+└── pyproject.toml             # Configuração do projeto (uv-ready)
 ```
 
 ---
 
-## 🚀 Instalação e Configuração
+## 🚀 Instalação e Execução Local
 
-O projeto delega o gerenciamento de dependências ao `pyproject.toml`. É fortemente encorajado o uso do **uv** para gerenciar o pacote, garantindo um ambiente ágil.
+### Pré-requisitos
+- Python 3.10+
+- (Recomendado) `uv` para gestão rápida de dependências.
+- Uma instância do banco de dados MongoDB.
 
-### Clone do repositório
+### 1. Clonando o repositório
 ```bash
 git clone https://github.com/leandrodpaula/tutto-mcp-server.git
 cd tutto-mcp-server
 ```
 
-### Instalação Simplificada (usando uv)
+### 2. Instalando as Dependências
 
+Usando **uv** (fortemente recomendado):
 ```bash
 uv venv
 source .venv/bin/activate
 uv pip install -e ".[dev]"
 ```
 
-*Alternativamente, usando pip tradicional:*
+Usando **pip**:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-Configure suas variáveis de ambiente:
+### 3. Variáveis de Ambiente
+Crie seu `.env` copiando o arquivo de exemplo:
 ```bash
 cp .env.example .env
 ```
-*(Preencha dados como o URI do MongoDB `MONGODB_URL` e o `MONGODB_DATABASE_NAME`)*
+Preencha as variáveis exigidas, com destaque para a conexão do banco de dados:
+```env
+MONGODB_URL="mongodb://seu_usuario:sua_senha@localhost:27017"
+MONGODB_DATABASE_NAME="tutto_db"
+```
 
----
+### 4. Executando o Servidor Localmente
 
-## 💻 Uso
-
-### Executando o Servidor
-
-O script configurado no `pyproject.toml` disponibiliza o comando direto na CLI do seu ambiente virtual:
-
+Através da CLI injetada pelo projeto:
 ```bash
 tutto-mcp-server
 ```
 
-Ou, utilizando como módulo Python rodando a partir da raiz:
-
+Ou usando módulo Python:
 ```bash
 python -m src.main
 ```
 
-### Exemplo de Ferramentas Disponíveis
+---
 
-O servidor vem com ferramentas base que demonstram o roteamento do FastMCP:
+## 🐳 Uso via Docker
 
-- **hello**: Cumprimenta uma pessoa
-- **add_numbers**: Adiciona dois números
-- **create_tenant** / **get_tenant**: Exemplos de interação assíncrona com MongoDB.
+A aplicação pode rodar através do Docker contendo o instalador super rápido da Astral (`uv`):
 
-### Exemplo de Recursos Disponíveis
-
-- **config://server**: Obtém informações de configuração do servidor.
+1. **Build da Imagem**:
+   ```bash
+   docker build -t tutto-mcp-server .
+   ```
+2. **Executar o Contêiner** (substituindo o MONGODB_URL com uma connection string acessível de dentro do docker):
+   ```bash
+   docker run -p 8080:8080 -e PORT=8080 -e MONGODB_URL="mongodb://..." -e MONGODB_DATABASE_NAME="tutto_db" tutto-mcp-server
+   ```
+   *Nota: O container exportará o FastMCP usando o transporte SSE (Server-Sent Events) apropriado para instâncias stand-alone / cloud.*
 
 ---
 
-## 🏛️ Arquitetura e Fluxo de Dados
+## ☁️ Como roda no Google Cloud (GCP)
 
-A base arquitetural utiliza o **FastMCP** acionando recursos internos baseados na Inversão de Dependência via pacotes no diretório `src/`:
+A aplicação é preparada para rodar nativamente em **Serverless** na Google Cloud Platform (GCP).
+Os recursos são totalmente provisionados via **Terraform** presente na pasta `/terraform/`:
 
-```
-Cliente MCP
-    ↓
-FastMCP Server (src/main.py)
-    ↓
-Tool / Resource Handlers (src/mcp)
-    ↓
-Services (src/services/...) → Models (src/models/...)
-    ↓
-Repositories (src/repositories/...)
-    ↓
-MongoDB (Motor AsyncIO Handler em src/core/)
-```
+- **Google Cloud Run**: O serviço em si é executado como um contêiner no Cloud Run. O Terraform ajusta o número de instâncias, os limites de recursos (ex: CPU/RAM) e mapeamentos de portas de forma autoescalável.
+- **Google Artifact Registry**: As imagens Docker geradas nos builds são hospedadas de forma privada nele.
+- **Google Secret Manager**: Segredos, como a string de conexão do Banco de Dados (`MONGODB_URL`), são extraídos do Secret Manager durante o spin-up do Cloud Run, em vez de vazarem por meio de variáveis abertas do Terraform.
+- **State do Terraform**: Fica gravado utilizando Cloud Storage (`backend "gcs"`).
 
-### Padrões de Design e Extensibilidade
+---
 
-Para adicionar novas ferramentas, crie um módulo dentro de `src/mcp/` (p.ex: `billing_tools.py`) e registre a função com o decorador `@mcp.tool()` através de uma assinatura clara de _type hints_:
+## 🔄 Pipeline CI/CD
 
-```python
-from fastmcp import FastMCP
+O projeto conta com automação via GitHub Actions (`.github/workflows/deploy.yml`) focada em branches centrais:
 
-def register_billing_tools(mcp: FastMCP):
-    @mcp.tool()
-    def calculate_tax(amount: float) -> float:
-        """
-        Calcula os impostos para um valor em BRL.
-        """
-        return amount * 0.15
-```
-
-Registre as novas instâncias importando no `src/main.py` e acoplando-as ao `mcp`.
+1. **Build & Push (`build-and-push`)**:
+   - Acionado via `push` nas branches `develop` ou `main`.
+   - Autentica no GCP a partir de secrets no repositório.
+   - Faz o build da imagem Docker (usando a tag baseada no número de execuções GitHub) e envia para o Artifact Registry.
+2. **Deploy Homologação (`deploy-hml`)**:
+   - Acionado no trigger da branch `develop` ou `main`.
+   - Lê os arquivos do Terraform (`terraform/`).
+   - Inicializa no workspace de Homologação e executa o `terraform apply`.
+3. **Deploy Produção (`deploy-prd`)**:
+   - Acionado apenas após o HML e exclusivamente na branch `main`.
+   - Roda o Terraform no workspace apontado para Produção e atualiza o serviço no Google Cloud Run que ficará disponível em escala produtiva.
 
 ---
 
 ## 🛠️ Desenvolvimento
 
 ### Executando Testes
-
-Toda a infraestrutura de testes unitários foi organizada e isolada. Para testar suas lógicas:
+Toda a infraestrutura de testes unitários foi organizada e isolada via `pytest`.
 
 ```bash
+# Rodar todos os testes
 pytest
-```
-Para obter o relatório de cobertura:
-```bash
+
+# Obter o relatório de cobertura
 pytest --cov=src
 ```
 
 ### Formatação de Código e Typings
 
-O pacote disponibiliza comandos essenciais dos _dependencies_ (`[dev]`):
+O pacote disponibiliza comandos essenciais (`[dev]` dependencies):
 
 ```bash
 # Formatar com Black
@@ -167,7 +177,7 @@ mypy src/
 ---
 
 ## 📄 Licença
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
+Este projeto está sob a licença [MIT](LICENSE).
 
 ## 📞 Contato
 Leandro D Paula - leandrodpaula@example.com
