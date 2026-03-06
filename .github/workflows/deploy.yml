@@ -6,6 +6,11 @@ on:
       - develop
       - main
 
+env:
+  TF_VAR_project_id: ${{ vars.PROJECT_ID }}
+  TF_VAR_service_name: ${{ vars.SERVICE_NAME }}
+  TF_VAR_region: ${{ vars.REGION }}
+  TF_VAR_image_tag: ${{ github.run_number }}
 
 jobs:
   build-and-push:
@@ -42,8 +47,6 @@ jobs:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     environment: hml
     env:
-      TF_VAR_project_id: ${{ vars.PROJECT_ID }}
-      TF_VAR_service_name: ${{ vars.SERVICE_NAME }}
       TF_VAR_environment: hml
     runs-on: ubuntu-latest
     defaults:
@@ -65,19 +68,16 @@ jobs:
         run: terraform init -backend-config="bucket=${{ vars.PROJECT_ID }}-tfstate" -backend-config="prefix=${{ vars.PROJECT_ID }}/${{ vars.SERVICE_NAME }}/${{ vars.ENVIRONMENT }}" -reconfigure
 
       - name: Terraform Plan HML
-        run: terraform plan -var="environment=hml" -var="project_id=${{ vars.PROJECT_ID }}" -var="image_tag=${{ github.run_number }}"
+        run: terraform plan 
 
       - name: Terraform Apply HML
-        run: terraform apply -auto-approve -var="environment=hml" -var="project_id=${{ vars.PROJECT_ID }}" -var="image_tag=${{ github.run_number }}"
-
+        run: terraform apply -auto-approve 
   deploy-prod:
     name: Deploy to PRD
     needs: deploy-hml
     if: github.ref == 'refs/heads/main'
     environment: prd
     env:
-      TF_VAR_project_id: ${{ vars.PROJECT_ID }}
-      TF_VAR_service_name: ${{ vars.SERVICE_NAME }}
       TF_VAR_environment: prd
     runs-on: ubuntu-latest
     defaults:
@@ -99,4 +99,4 @@ jobs:
         run: terraform init -backend-config="bucket=${{ vars.PROJECT_ID }}-tfstate" -backend-config="prefix=${{ vars.PROJECT_ID }}/${{ vars.SERVICE_NAME }}/${{ vars.ENVIRONMENT }}" -reconfigure
 
       - name: Terraform Apply PRD
-        run: terraform apply -auto-approve -var="environment=prd" -var="project_id=${{ vars.PROJECT_ID }}" -var="image_tag=${{ github.run_number }}"
+        run: terraform apply -auto-approve 
