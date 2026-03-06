@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
-WORKDIR /code
+WORKDIR /tutto-mcp-server
 
 # Instalar 'uv' utilizando o script oficial no path
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -20,10 +20,10 @@ COPY pyproject.toml .
 RUN uv pip install --system -e .
 
 # Copiar a aplicação para dentro do contâiner
-COPY src/ ./src/
+COPY src/ /tutto-mcp-server/src/
 
 # Garantir que o módulo 'src' seja encontrado pelo Python
-ENV PYTHONPATH=/code
+ENV PYTHONPATH=/tutto-mcp-server
 
 # Variável usada no Google Cloud Run
 ENV PORT=8080
