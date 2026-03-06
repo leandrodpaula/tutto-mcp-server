@@ -22,6 +22,9 @@ RUN uv pip install --system -e .
 # Copiar a aplicação para dentro do contâiner
 COPY src/ ./src/
 
+# Garantir que o módulo 'src' seja encontrado pelo Python
+ENV PYTHONPATH=/code
+
 # Variável usada no Google Cloud Run
 ENV PORT=8080
 
