@@ -35,7 +35,7 @@ resource "google_cloud_run_v2_service" "default" {
       }
 
       env {
-        name  = "DATABASE_NAME"
+        name  = "MONGODB_DATABASE_NAME"
         value = "${var.project_id}_db" # Placeholder para nome de banco genérico 
       }
 

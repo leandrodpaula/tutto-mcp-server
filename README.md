@@ -53,7 +53,7 @@ Configure suas variáveis de ambiente:
 ```bash
 cp .env.example .env
 ```
-*(Preencha dados como o URI do MongoDB `MONGODB_URL` e o `DATABASE_NAME`)*
+*(Preencha dados como o URI do MongoDB `MONGODB_URL` e o `MONGODB_DATABASE_NAME`)*
 
 ---
 
