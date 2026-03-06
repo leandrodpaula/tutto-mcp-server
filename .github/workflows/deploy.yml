@@ -32,14 +32,15 @@ jobs:
 
       - name: Configure Docker Auth for Artifact Registry
         run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
+        
 
       - name: Build Docker Image
         run: |
-          docker build -t ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/artefacts/${{ vars.SERVICE_NAME }}:${{ github.run_number }} .
-
+          docker build -t ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/artefacts/${{ vars.SERVICE_NAME }}:latest .
+          docker tag ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/artefacts/${{ vars.SERVICE_NAME }}:latest ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/artefacts/${{ vars.SERVICE_NAME }}:${{ github.run_number }}
       - name: Push Docker Image
         run: |
-          docker push ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/artefacts/${{ vars.SERVICE_NAME }}:${{ github.run_number }}
+          docker push ${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/artefacts/${{ vars.SERVICE_NAME }}:latest
 
   deploy-hml:
     name: Deploy to HML
