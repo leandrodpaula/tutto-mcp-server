@@ -17,7 +17,7 @@ resource "google_cloud_run_v2_service" "default" {
     service_account = google_service_account.component_sa.email
 
     containers {
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/${data.google_artifact_registry_repository.registry.repository_id}/${var.service_name}:${var.environment}"
+      image = "${var.region}-docker.pkg.dev/${var.project_id}/${data.google_artifact_registry_repository.registry.repository_id}/${var.service_name}:${var.image_tag}"
 
       env {
         name  = "ENVIRONMENT"

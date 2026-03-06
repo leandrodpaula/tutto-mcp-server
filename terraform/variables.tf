@@ -17,3 +17,9 @@ variable "region" {
   type        = string
   description = "Região principal do GCP"
 }
+
+variable "image_tag" {
+  type        = string
+  description = "Tag da imagem Docker (ex: commit sha)"
+  default     = "latest"
+}
