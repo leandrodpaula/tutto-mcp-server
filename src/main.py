@@ -6,6 +6,8 @@ from starlette.responses import Response
 from fastmcp import FastMCP
 from src.mcp.tenant_tools import register_tenant_tools
 from src.mcp.text_tools import register_text_tools
+from src.mcp.worker_tools import register_worker_tools
+from src.mcp.user_tools import register_user_tools
 
 # Initialize FastMCP server
 mcp = FastMCP("Tutto MCP Server")
@@ -13,6 +15,8 @@ mcp = FastMCP("Tutto MCP Server")
 # Register tool modules
 register_tenant_tools(mcp)
 register_text_tools(mcp)
+register_worker_tools(mcp)
+register_user_tools(mcp)
 
 
 @mcp.custom_route("/healthz", methods=["GET"], name="healthz", include_in_schema=False)
