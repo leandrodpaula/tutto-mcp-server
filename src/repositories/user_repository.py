@@ -15,6 +15,7 @@ class UserRepository:
 
     async def create(self, user: UserCreate) -> dict:
         user_dict = user.model_dump()
+        user_dict["is_active"] = True
         user_dict["created_at"] = datetime.utcnow()
         user_dict["updated_at"] = datetime.utcnow()
         result = await self.collection.insert_one(user_dict)
