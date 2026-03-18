@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -6,6 +7,7 @@ class Settings(BaseSettings):
     MONGODB_DATABASE_NAME: str = "tutto_db"
     MERCADO_PAGO_ACCESS_TOKEN: str = ""
     MERCADO_PAGO_BACK_URL_BASE: str = "https://tutto.example.com"
+    PORT: int = Field(8000, alias="SERVER_PORT")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

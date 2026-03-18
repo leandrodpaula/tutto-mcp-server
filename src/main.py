@@ -39,5 +39,7 @@ async def healthz(request: Request) -> Response:
     )
 
 if __name__ == "__main__":
+    from src.core.config import settings
     # Run the server
+    print(f"Starting {settings.PROJECT_NAME} on port {settings.PORT}...", flush=True)
     mcp.run()
