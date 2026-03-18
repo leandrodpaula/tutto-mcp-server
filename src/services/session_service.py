@@ -9,5 +9,5 @@ class SessionService:
     async def add_session_data(self, session: SessionCreate) -> dict:
         return await self.repository.create(session)
 
-    async def get_session_history(self, session_id: str, tenant_id: str) -> List[dict]:
-        return await self.repository.get_by_session(session_id, tenant_id)
+    async def get_session_history(self, user_id: str, tenant_id: str) -> List[dict]:
+        return await self.repository.get_by_user(user_id, tenant_id)

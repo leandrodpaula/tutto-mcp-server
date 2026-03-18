@@ -1,0 +1,139 @@
+from fastmcp import FastMCP
+from typing import Optional, Literal
+from src.core.database import get_database
+from src.repositories.subscription_repository import SubscriptionRepository
+from src.repositories.coupon_repository import CouponRepository
+from src.repositories.plan_repository import PlanRepository
+from src.services.subscription_service import SubscriptionService, SubscriptionServiceError
+from src.services.coupon_service import CouponService
+from src.services.plan_service import PlanService
+from src.models.subscription import SubscriptionCreate, SubscriptionUpdate
+from datetime import datetime
+
+def register_subscription_tools(mcp: FastMCP) -> None:
+    @mcp.tool()
+    async def create_subscription(
+        tenant_id: str,
+        plan: str,
+        status: str = "active",
+        starts_at: Optional[str] = None,
+        expires_at: Optional[str] = None,
+        coupon: Optional[str] = None,
+        is_free: bool = False
+    ) -> str:
+        """
+        Creates a new subscription for a tenant.
+
+        Args:
+            tenant_id: The ID of the tenant.
+            plan: The subscription plan name (e.g., 'silver', 'gold').
+            status: Initial status (default: 'active').
+            starts_at: ISO start date (optional).
+            expires_at: ISO expiration date (optional).
+            coupon: Optional coupon code.
+            is_free: If True, skips payment link generation.
+        """
+        try:
+            db = get_database()
+            repo = SubscriptionRepository(db)
+            coupon_repo = CouponRepository(db)
+            plan_repo = PlanRepository(db)
+            
+            coupon_service = CouponService(coupon_repo)
+            plan_service = PlanService(plan_repo)
+            service = SubscriptionService(repo, coupon_service, plan_service)
+            
+            parsed_starts = datetime.fromisoformat(starts_at) if starts_at else None
+            parsed_expires = datetime.fromisoformat(expires_at) if expires_at else None
+
+            sub_in = SubscriptionCreate(
+                tenant_id=tenant_id,
+                plan=plan,
+                status=status,
+                starts_at=parsed_starts,
+                expires_at=parsed_expires,
+                coupon=coupon,
+                is_free=is_free
+            )
+            result = await service.create_subscription(sub_in)
+            payment_info = f"\nPayment Link: {result.get('payment_link')}" if result.get('payment_link') else ""
+            return f"Subscription created successfully: {result}{payment_info}"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    @mcp.tool()
+    async def get_subscription(tenant_id: str, is_active: Optional[bool] = True) -> str:
+        """Retrieves the subscription for a tenant."""
+        try:
+            db = get_database()
+            repo = SubscriptionRepository(db)
+            coupon_repo = CouponRepository(db)
+            plan_repo = PlanRepository(db)
+            
+            coupon_service = CouponService(coupon_repo)
+            plan_service = PlanService(plan_repo)
+            service = SubscriptionService(repo, coupon_service, plan_service)
+
+            sub_out = await service.get_subscription(tenant_id, is_active)
+            return f"Subscription found: {sub_out}"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    @mcp.tool()
+    async def update_subscription(
+        tenant_id: str,
+        plan: Optional[str] = None,
+        status: Optional[str] = None,
+        expires_at: Optional[str] = None,
+        is_free: Optional[bool] = None
+    ) -> str:
+        """
+        Updates an existing subscription.
+
+        Args:
+            tenant_id: The ID of the tenant.
+            plan: New plan name (optional).
+            status: New status (optional).
+            expires_at: ISO expiration date (optional).
+            is_free: Optional boolean flag.
+        """
+        try:
+            db = get_database()
+            repo = SubscriptionRepository(db)
+            coupon_repo = CouponRepository(db)
+            plan_repo = PlanRepository(db)
+            
+            coupon_service = CouponService(coupon_repo)
+            plan_service = PlanService(plan_repo)
+            service = SubscriptionService(repo, coupon_service, plan_service)
+            
+            parsed_expires = datetime.fromisoformat(expires_at) if expires_at else None
+
+            update_in = SubscriptionUpdate(
+                plan=plan,
+                status=status,
+                expires_at=parsed_expires,
+                is_free=is_free
+            )
+            result = await service.update_subscription(tenant_id, update_in)
+            return f"Subscription updated successfully: {result}"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    @mcp.tool()
+    async def cancel_subscription(tenant_id: str) -> str:
+        """Cancels a subscription."""
+        try:
+            db = get_database()
+            repo = SubscriptionRepository(db)
+            coupon_repo = CouponRepository(db)
+            plan_repo = PlanRepository(db)
+            
+            coupon_service = CouponService(coupon_repo)
+            plan_service = PlanService(plan_repo)
+            service = SubscriptionService(repo, coupon_service, plan_service)
+
+            result = await service.cancel_subscription(tenant_id)
+            return f"Subscription cancelled successfully: {result}"
+        except Exception as e:
+            return f"Error: {str(e)}"

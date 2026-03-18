@@ -3,7 +3,7 @@ from typing import Optional, Literal
 from src.core.database import get_database
 from src.repositories.session_repository import SessionRepository
 from src.services.session_service import SessionService
-from src.models.session import SessionCreate, SessionData
+from src.models.session import SessionCreate, MessageData
 
 def register_session_tools(mcp: FastMCP) -> None:
     @mcp.tool()
@@ -34,13 +34,13 @@ def register_session_tools(mcp: FastMCP) -> None:
             repo = SessionRepository(db)
             service = SessionService(repo)
             
-            sess_data = SessionData(type=session_type, content=session_content)
+            message = MessageData(type=session_type, content=session_content)
             session_in = SessionCreate(
                 tenant_id=tenant_id, 
                 user_id=user_id, 
                 session_id=session_id, 
                 author=author,
-                session=sess_data
+                message=message
             )
             
             result = await service.add_session_data(session_in)
@@ -49,13 +49,13 @@ def register_session_tools(mcp: FastMCP) -> None:
             return f"Error adding session data: {str(e)}"
 
     @mcp.tool()
-    async def get_session_history(tenant_id: str, session_id: str) -> str:
+    async def get_session_history(tenant_id: str, user_id: str) -> str:
         """
         Retrieves the history for a specific session.
 
         Args:
             tenant_id: The ID of the tenant
-            session_id: The ID of the session
+            user_id: The ID of the user
         
         Returns:
             A string with the list of session data or an error message.
@@ -65,7 +65,9 @@ def register_session_tools(mcp: FastMCP) -> None:
             repo = SessionRepository(db)
             service = SessionService(repo)
             
-            history = await service.get_session_history(session_id, tenant_id)
-            return f"Session history for {session_id}: {history}"
+            history = await service.get_session_history(user_id, tenant_id)
+            return f"Session history for {user_id}: {history}"
         except Exception as e:
             return f"Error retrieving history: {str(e)}"
+
+    

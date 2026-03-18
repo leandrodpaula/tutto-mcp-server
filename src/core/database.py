@@ -12,12 +12,12 @@ async def connect_to_mongo() -> None:
     if settings.MONGODB_URL:
         db_manager.client = AsyncIOMotorClient(settings.MONGODB_URL)
         db_manager.db = db_manager.client[settings.MONGODB_DATABASE_NAME]
-        print(f"Connected to MongoDB at {settings.MONGODB_DATABASE_NAME}")
+        print(f"Connected to MongoDB at {settings.MONGODB_DATABASE_NAME}", flush=True)
 
 async def close_mongo_connection() -> None:
     if db_manager.client:
         db_manager.client.close()
-        print("MongoDB connection closed")
+        print("MongoDB connection closed", flush=True)
 
 def get_database() -> AsyncIOMotorDatabase:
     if db_manager.db is None:

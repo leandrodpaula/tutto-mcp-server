@@ -4,6 +4,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Tutto MCP Server"
     MONGODB_URL: str
     MONGODB_DATABASE_NAME: str = "tutto_db"
+    MERCADO_PAGO_ACCESS_TOKEN: str = ""
+    MERCADO_PAGO_BACK_URL_BASE: str = "https://tutto.example.com"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
