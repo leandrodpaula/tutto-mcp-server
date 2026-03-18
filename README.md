@@ -178,8 +178,4 @@ mypy src/
 
 ## 📄 Licença
 Este projeto está sob a licença [MIT](LICENSE).
-
-## 📞 Contato
-Leandro D Paula - leandrodpaula@example.com
-
 Link do Projeto: [https://github.com/leandrodpaula/tutto-mcp-server](https://github.com/leandrodpaula/tutto-mcp-server)
