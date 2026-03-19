@@ -1,6 +1,9 @@
 from fastmcp import FastMCP
 from typing import Optional, List
 from src.core.database import get_database
+from src.core.logging import get_logger
+
+logger = get_logger(__name__)
 from src.repositories.plan_repository import PlanRepository
 from src.services.plan_service import PlanService, PlanServiceError
 from src.models.plan import PlanCreate, PlanUpdate
@@ -40,10 +43,9 @@ def register_plan_tools(mcp: FastMCP) -> None:
             )
             created = await service.create_plan(plan_in)
             return f"Plan created successfully: {created}"
-        except PlanServiceError as e:
-            return f"Error: {str(e)}"
         except Exception as e:
-            return f"Unexpected error: {str(e)}"
+            logger.error(f"Error creating plan: {str(e)}")
+            raise
 
     @mcp.tool()
     async def list_active_plans() -> str:
@@ -55,7 +57,8 @@ def register_plan_tools(mcp: FastMCP) -> None:
             plans = await service.list_active_plans()
             return f"Active plans: {plans}"
         except Exception as e:
-            return f"Error: {str(e)}"
+            logger.error(f"Error listing plans: {str(e)}")
+            raise
 
     @mcp.tool()
     async def update_plan(
@@ -82,7 +85,6 @@ def register_plan_tools(mcp: FastMCP) -> None:
             )
             plan_out = await service.update_plan(plan_id, update_in)
             return f"Plan updated successfully: {plan_out}"
-        except PlanServiceError as e:
-            return f"Error: {str(e)}"
         except Exception as e:
-            return f"Unexpected error: {str(e)}"
+            logger.error(f"Error updating plan: {str(e)}")
+            raise

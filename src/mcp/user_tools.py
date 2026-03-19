@@ -1,6 +1,9 @@
 from fastmcp import FastMCP
 from typing import Optional
 from src.core.database import get_database
+from src.core.logging import get_logger
+
+logger = get_logger(__name__)
 from src.repositories.user_repository import UserRepository
 from src.services.user_service import UserService, UserServiceError
 from src.models.user import UserCreate, UserUpdate
@@ -28,10 +31,9 @@ def register_user_tools(mcp: FastMCP) -> None:
             user_in = UserCreate(tenant_id=tenant_id, phone=phone, nome=nome, email=email)
             user_out = await service.create_user(user_in)
             return f"User registered successfully: {user_out}"
-        except UserServiceError as e:
-            return f"Error registering user: {str(e)}"
         except Exception as e:
-            return f"Unexpected error: {str(e)}"
+            logger.error(f"Error registering user for tenant {tenant_id}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def get_user(user_id: str) -> str:
@@ -51,10 +53,9 @@ def register_user_tools(mcp: FastMCP) -> None:
             
             user_out = await service.get_user(user_id)
             return f"User found: {user_out}"
-        except UserServiceError as e:
-            return f"Error retrieving user: {str(e)}"
         except Exception as e:
-            return f"Unexpected error: {str(e)}"
+            logger.error(f"Error retrieving user {user_id}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def update_user(user_id: str, phone: Optional[str] = None, nome: Optional[str] = None, email: Optional[str] = None) -> str:
@@ -78,10 +79,9 @@ def register_user_tools(mcp: FastMCP) -> None:
             user_update = UserUpdate(phone=phone, nome=nome, email=email)
             user_out = await service.update_user(user_id, user_update)
             return f"User updated successfully: {user_out}"
-        except UserServiceError as e:
-            return f"Error updating user: {str(e)}"
         except Exception as e:
-            return f"Unexpected error: {str(e)}"
+            logger.error(f"Error updating user {user_id}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def find_user(tenant_id: str, phone: str) -> str:
@@ -102,10 +102,9 @@ def register_user_tools(mcp: FastMCP) -> None:
             
             user_out = await service.find_user_by_phone(tenant_id, phone)
             return f"User found: {user_out}"
-        except UserServiceError as e:
-            return f"Error finding user: {str(e)}"
         except Exception as e:
-            return f"Unexpected error: {str(e)}"
+            logger.error(f"Error finding user by phone {phone} in tenant {tenant_id}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def list_users(tenant_id: str) -> str:
@@ -126,4 +125,5 @@ def register_user_tools(mcp: FastMCP) -> None:
             users = await service.list_users_by_tenant(tenant_id)
             return f"Users for tenant {tenant_id}: {users}"
         except Exception as e:
-            return f"Unexpected error: {str(e)}"
+            logger.error(f"Error listing users for tenant {tenant_id}: {str(e)}")
+            raise

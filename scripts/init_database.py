@@ -15,6 +15,11 @@ from src.repositories.coupon_repository import CouponRepository
 from src.models.plan import PlanCreate, PlanUpdate
 from src.models.coupon import CouponCreate, CouponUpdate
 from src.core.config import settings
+from src.core.logging import get_logger, setup_logging
+
+# Initialize logging for the script
+setup_logging()
+logger = get_logger("init_database")
 
 async def init_plans(db):
     repo = PlanRepository(db)
@@ -55,11 +60,11 @@ async def init_plans(db):
         )
     ]
     
-    print(f"Initializing {len(plans)} plans...", flush=True)
+    logger.info(f"Initializing {len(plans)} plans...")
     for plan in plans:
         existing = await repo.get_by_name(plan.name)
         if existing:
-            print(f"Plan '{plan.name}' exists. Updating...", flush=True)
+            logger.info(f"Plan '{plan.name}' exists. Updating...")
             update_data = PlanUpdate(
                 title=plan.title,
                 description=plan.description,
@@ -69,13 +74,13 @@ async def init_plans(db):
                 change_reason="Initialize/Update default plans"
             )
             updated = await repo.update(str(existing["id"]), update_data)
-            print(f"Updated plan: {updated['title']} ({updated['name']})", flush=True)
+            logger.info(f"Updated plan: {updated['title']} ({updated['name']})")
         else:
             try:
                 created = await repo.create(plan)
-                print(f"Created plan: {created['title']} ({created['name']})", flush=True)
+                logger.info(f"Created plan: {created['title']} ({created['name']})")
             except Exception as e:
-                print(f"Error creating plan '{plan.name}': {str(e)}", flush=True)
+                logger.error(f"Error creating plan '{plan.name}': {str(e)}")
 
 async def init_coupons(db):
     repo = CouponRepository(db)
@@ -90,11 +95,11 @@ async def init_coupons(db):
         )
     ]
     
-    print(f"Initializing {len(coupons)} coupons...", flush=True)
+    logger.info(f"Initializing {len(coupons)} coupons...")
     for coupon in coupons:
         existing = await repo.get_by_short_code(coupon.short_code)
         if existing:
-            print(f"Coupon '{coupon.short_code}' exists. Updating...", flush=True)
+            logger.info(f"Coupon '{coupon.short_code}' exists. Updating...")
             update_data = CouponUpdate(
                 title=coupon.title,
                 description=coupon.description,
@@ -102,29 +107,29 @@ async def init_coupons(db):
                 is_active=coupon.is_active
             )
             updated = await repo.update(str(existing["id"]), update_data)
-            print(f"Updated coupon: {updated['short_code']}", flush=True)
+            logger.info(f"Updated coupon: {updated['short_code']}")
         else:
             try:
                 created = await repo.create(coupon)
-                print(f"Created coupon: {created['short_code']}", flush=True)
+                logger.info(f"Created coupon: {created['short_code']}")
             except Exception as e:
-                print(f"Error creating coupon '{coupon.short_code}': {str(e)}", flush=True)
+                logger.error(f"Error creating coupon '{coupon.short_code}': {str(e)}")
 
 async def main():
-    print(f"Connecting to MongoDB at {settings.MONGODB_DATABASE_NAME}...", flush=True)
+    logger.info(f"Connecting to MongoDB at {settings.MONGODB_DATABASE_NAME}...")
     await connect_to_mongo()
     
     if db_manager.db is None:
-        print("Failed to connect to database.", flush=True)
+        logger.error("Failed to connect to database.")
         sys.exit(1)
 
-    print("\n--- Initializing Plans ---", flush=True)
+    logger.info("--- Initializing Plans ---")
     await init_plans(db_manager.db)
     
-    print("\n--- Initializing Coupons ---", flush=True)
+    logger.info("--- Initializing Coupons ---")
     await init_coupons(db_manager.db)
     
-    print("\nInitialization complete.", flush=True)
+    logger.info("Initialization complete.")
 
 if __name__ == "__main__":
     asyncio.run(main())

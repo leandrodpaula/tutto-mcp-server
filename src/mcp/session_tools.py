@@ -1,6 +1,9 @@
 from fastmcp import FastMCP
 from typing import Optional, Literal
 from src.core.database import get_database
+from src.core.logging import get_logger
+
+logger = get_logger(__name__)
 from src.repositories.session_repository import SessionRepository
 from src.services.session_service import SessionService
 from src.models.session import SessionCreate, MessageData
@@ -46,7 +49,8 @@ def register_session_tools(mcp: FastMCP) -> None:
             result = await service.add_session_data(session_in)
             return f"Session data added successfully: {result}"
         except Exception as e:
-            return f"Error adding session data: {str(e)}"
+            logger.error(f"Error adding session data for {session_id}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def get_session_history(tenant_id: str, user_id: str) -> str:
@@ -68,6 +72,7 @@ def register_session_tools(mcp: FastMCP) -> None:
             history = await service.get_session_history(user_id, tenant_id)
             return f"Session history for {user_id}: {history}"
         except Exception as e:
-            return f"Error retrieving history: {str(e)}"
+            logger.error(f"Error retrieving history for user {user_id} in tenant {tenant_id}: {str(e)}")
+            raise
 
     

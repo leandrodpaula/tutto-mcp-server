@@ -1,9 +1,11 @@
 from fastmcp import FastMCP
 from typing import Optional, Literal
 from src.core.database import get_database
+from src.core.logging import get_logger
+
+logger = get_logger(__name__)
 from src.repositories.tenant_repository import TenantRepository
 from src.services.tenant_service import TenantService, TenantServiceError
-from src.models.tenant import TenantCreate
 from src.models.tenant import TenantCreate
 from src.repositories.instruction_repository import InstructionRepository
 from src.services.instruction_service import InstructionService
@@ -33,10 +35,9 @@ def register_tenant_tools(mcp: FastMCP) -> None:
             tenant_in = TenantCreate(name=name, document=document, phone=phone, domain=domain, token=token)
             tenant_out = await service.create_tenant(tenant_in)
             return f"Tenant created successfully: {tenant_out}"
-        except TenantServiceError as e:
-            return f"Error creating tenant: {str(e)}"
         except Exception as e:
-            return f"Unexpected error: {str(e)}"
+            logger.error(f"Error creating tenant {name}: {str(e)}")
+            raise
             
     @mcp.tool()
     async def get_tenant(identifier: str, by: str = "id") -> str:
@@ -57,10 +58,9 @@ def register_tenant_tools(mcp: FastMCP) -> None:
             
             tenant_out = await service.get_tenant(identifier, by)
             return f"Tenant found: {tenant_out}"
-        except TenantServiceError as e:
-            return f"Error retrieving tenant: {str(e)}"
         except Exception as e:
-            return f"Unexpected error: {str(e)}"
+            logger.error(f"Error retrieving tenant {identifier} by {by}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def get_tenant_instructions(tenant_id: str, type: Optional[str] = None) -> str:
@@ -89,7 +89,8 @@ def register_tenant_tools(mcp: FastMCP) -> None:
 
             return results
         except Exception as e:
-            return f"Error searching instructions: {str(e)}"
+            logger.error(f"Error searching instructions for tenant {tenant_id}: {str(e)}")
+            raise
 
 
     
@@ -136,7 +137,8 @@ def register_tenant_tools(mcp: FastMCP) -> None:
             instruction_out = await service_layer.add_instruction(instruction_in)
             return instruction_out
         except Exception as e:
-            return f"Error adding instruction: {str(e)}"
+            logger.error(f"Error adding instruction '{name}' for tenant {tenant_id}: {str(e)}")
+            raise
 
 
     @mcp.tool()
@@ -159,7 +161,8 @@ def register_tenant_tools(mcp: FastMCP) -> None:
             instruction_out = await service_layer.remove_instruction(instruction_id)
             return f"Instruction removed successfully: {instruction_out['name']} (ID: {instruction_out['id']})"
         except Exception as e:
-            return f"Error removing instruction: {str(e)}"
+            logger.error(f"Error removing instruction {instruction_id} for tenant {tenant_id}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def update_tenant_instruction(

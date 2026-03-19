@@ -1,6 +1,9 @@
 from fastmcp import FastMCP
 from typing import Optional
 from src.core.database import get_database
+from src.core.logging import get_logger
+
+logger = get_logger(__name__)
 from src.repositories.coupon_repository import CouponRepository
 from src.services.coupon_service import CouponService, CouponServiceError
 from src.models.coupon import CouponCreate, CouponUpdate
@@ -48,10 +51,9 @@ def register_coupon_tools(mcp: FastMCP) -> None:
             )
             coupon_out = await service.create_coupon(coupon_in)
             return f"Coupon created successfully: {coupon_out}"
-        except CouponServiceError as e:
-            return f"Error: {str(e)}"
         except Exception as e:
-            return f"Unexpected error: {str(e)}"
+            logger.error(f"Error creating coupon: {str(e)}")
+            raise
 
     @mcp.tool()
     async def get_coupon(short_code: str) -> str:
@@ -62,8 +64,9 @@ def register_coupon_tools(mcp: FastMCP) -> None:
             service = CouponService(repo)
             coupon = await service.get_coupon_by_code(short_code)
             return f"Coupon found: {coupon}"
-        except CouponServiceError as e:
-            return f"Error: {str(e)}"
+        except Exception as e:
+            logger.error(f"Error getting coupon {short_code}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def list_active_coupons() -> str:
@@ -75,7 +78,8 @@ def register_coupon_tools(mcp: FastMCP) -> None:
             coupons = await service.list_active_coupons()
             return f"Active coupons: {coupons}"
         except Exception as e:
-            return f"Error: {str(e)}"
+            logger.error(f"Error listing coupons: {str(e)}")
+            raise
 
     @mcp.tool()
     async def update_coupon(
@@ -98,5 +102,6 @@ def register_coupon_tools(mcp: FastMCP) -> None:
             )
             coupon_out = await service.update_coupon(coupon_id, update_in)
             return f"Coupon updated successfully: {coupon_out}"
-        except CouponServiceError as e:
-            return f"Error: {str(e)}"
+        except Exception as e:
+            logger.error(f"Error updating coupon {coupon_id}: {str(e)}")
+            raise

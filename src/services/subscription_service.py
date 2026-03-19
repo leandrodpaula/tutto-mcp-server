@@ -1,5 +1,8 @@
 from typing import Optional
 from src.models.subscription import SubscriptionCreate, SubscriptionUpdate
+from src.core.logging import get_logger
+
+logger = get_logger(__name__)
 from src.repositories.subscription_repository import SubscriptionRepository
 from src.services.payment_service import PaymentService
 from src.services.coupon_service import CouponService, CouponServiceError
@@ -52,7 +55,7 @@ class SubscriptionService:
                     price
                 )
             except Exception as e:
-                print(f"Failed to generate payment link: {str(e)}")
+                logger.error(f"Failed to generate payment link: {str(e)}")
                 payment_link = "Error generating link. Contact support."
 
         if existing:

@@ -1,6 +1,9 @@
 from fastmcp import FastMCP
 from typing import Optional, Literal
 from src.core.database import get_database
+from src.core.logging import get_logger
+
+logger = get_logger(__name__)
 from src.repositories.subscription_repository import SubscriptionRepository
 from src.repositories.coupon_repository import CouponRepository
 from src.repositories.plan_repository import PlanRepository
@@ -59,7 +62,8 @@ def register_subscription_tools(mcp: FastMCP) -> None:
             payment_info = f"\nPayment Link: {result.get('payment_link')}" if result.get('payment_link') else ""
             return f"Subscription created successfully: {result}{payment_info}"
         except Exception as e:
-            return f"Error: {str(e)}"
+            logger.error(f"Error creating subscription for tenant {tenant_id}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def get_subscription(tenant_id: str, is_active: Optional[bool] = True) -> str:
@@ -77,7 +81,8 @@ def register_subscription_tools(mcp: FastMCP) -> None:
             sub_out = await service.get_subscription(tenant_id, is_active)
             return f"Subscription found: {sub_out}"
         except Exception as e:
-            return f"Error: {str(e)}"
+            logger.error(f"Error getting subscription for tenant {tenant_id}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def update_subscription(
@@ -118,7 +123,8 @@ def register_subscription_tools(mcp: FastMCP) -> None:
             result = await service.update_subscription(tenant_id, update_in)
             return f"Subscription updated successfully: {result}"
         except Exception as e:
-            return f"Error: {str(e)}"
+            logger.error(f"Error updating subscription for tenant {tenant_id}: {str(e)}")
+            raise
 
     @mcp.tool()
     async def cancel_subscription(tenant_id: str) -> str:
@@ -136,4 +142,5 @@ def register_subscription_tools(mcp: FastMCP) -> None:
             result = await service.cancel_subscription(tenant_id)
             return f"Subscription cancelled successfully: {result}"
         except Exception as e:
-            return f"Error: {str(e)}"
+            logger.error(f"Error cancelling subscription for tenant {tenant_id}: {str(e)}")
+            raise
