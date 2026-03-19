@@ -13,11 +13,11 @@ WORKDIR /tutto-mcp-server
 # Instalar 'uv' utilizando o script oficial no path
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Copiar arquivos de configuração do projeto 
-COPY pyproject.toml .
+# Copiar arquivos de projeto
+COPY pyproject.toml uv.lock ./
 
-# Sincronizar dependências no root do container de forma otimizada
-RUN uv pip install --system -e .
+# Instalar dependências de forma gerenciada (sem virtualenv no container forçado)
+RUN uv sync --frozen --no-cache
 
 # Copiar a aplicação para dentro do contâiner
 COPY src/ /tutto-mcp-server/src/
@@ -28,5 +28,5 @@ ENV PYTHONPATH=/tutto-mcp-server
 # Variável usada no Google Cloud Run
 ENV PORT=8080
 
-# Iniciar via FastMCP CLI forçando o protocolo SSE para ambientes serverless
-CMD fastmcp run src/main.py:mcp --transport sse --host 0.0.0.0 --port $PORT
+# Iniciar a aplicação utilizando o UV
+CMD ["uv", "run", "python", "-m", "src.main"]
