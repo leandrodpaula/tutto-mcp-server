@@ -40,6 +40,16 @@ resource "google_cloud_run_v2_service" "default" {
         value = "${var.project_id}_db" # Placeholder para nome de banco genérico 
       }
 
+      env{
+        name = "SERVER_PORT"
+        value = "8000"
+      }
+
+      env{
+        name = "MCP_TRANSPORT"
+        value = "http"
+      }
+
       # Mapeamento do FastMCP
       ports {
         container_port = 8000
