@@ -14,6 +14,7 @@ resource "google_cloud_run_v2_service" "default" {
   project  = var.project_id
 
   template {
+    max_instance_request_concurrency = 80
     service_account = google_service_account.component_sa.email
 
     containers {
@@ -45,16 +46,18 @@ resource "google_cloud_run_v2_service" "default" {
       }
 
       resources {
+        cpu_idle = true
+        startup_cpu_boost = true
         limits = {
           cpu    = "1"
-          memory = "512Mi"
+          memory = "256Mi"
         }
       }
     }
 
     scaling {
-      min_instance_count = var.environment == "prd" ? 1 : 0
-      max_instance_count = 10
+      min_instance_count = 0
+      max_instance_count = 3
     }
   }
 
