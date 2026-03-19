@@ -48,7 +48,7 @@ resource "google_cloud_run_v2_service" "default" {
       env{
         name = "MCP_TRANSPORT"
         value = "http"
-      }
+      } 
 
       # Mapeamento do FastMCP
       ports {
