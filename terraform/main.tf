@@ -14,7 +14,7 @@ resource "google_cloud_run_v2_service" "default" {
   project  = var.project_id
 
   template {
-    max_instance_request_concurrency = 80
+    max_instance_request_concurrency = 50
     service_account = google_service_account.component_sa.email
 
     containers {
