@@ -26,7 +26,7 @@ COPY src/ /tutto-mcp-server/src/
 ENV PYTHONPATH=/tutto-mcp-server
 
 # Variável usada no Google Cloud Run
-ENV PORT=8080
+ENV PORT=8000
 
 # Iniciar a aplicação utilizando o UV
 CMD ["uv", "run", "python", "-m", "src.main"]

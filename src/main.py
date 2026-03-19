@@ -55,7 +55,7 @@ register_schedule_tools(mcp)
 
     
 
-@mcp.custom_route("/healthz", methods=["GET"], name="healthz", include_in_schema=False)
+@mcp.custom_route("/healthz", methods=["GET"], name="healthz", include_in_schema=True)
 async def healthz(request: Request) -> Response:
     """Health check endpoint for Cloud Run."""
     return Response(
