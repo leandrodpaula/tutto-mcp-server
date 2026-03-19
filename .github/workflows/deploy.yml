@@ -89,7 +89,7 @@ jobs:
   deploy-prod:
     name: Deploy to PRD
     needs: deploy-hml
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     environment: prd
     env:
       TF_VAR_environment: prd
