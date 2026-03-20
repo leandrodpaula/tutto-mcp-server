@@ -4,6 +4,7 @@ from src.core.logging import get_logger
 
 logger = get_logger(__name__)
 from src.repositories.subscription_repository import SubscriptionRepository
+from src.repositories.tenant_repository import TenantRepository
 from src.services.payment_service import PaymentService
 from src.services.coupon_service import CouponService, CouponServiceError
 from src.services.plan_service import PlanService, PlanServiceError
@@ -14,13 +15,32 @@ class SubscriptionServiceError(Exception):
     pass
 
 class SubscriptionService:
-    def __init__(self, repository: SubscriptionRepository, coupon_service: CouponService, plan_service: PlanService):
+    def __init__(
+        self, 
+        repository: SubscriptionRepository, 
+        tenant_repository: TenantRepository,
+        coupon_service: CouponService, 
+        plan_service: PlanService
+    ):
         self.repository = repository
+        self.tenant_repository = tenant_repository
         self.payment_service = PaymentService()
         self.coupon_service = coupon_service
         self.plan_service = plan_service
 
     async def create_subscription(self, subscription: SubscriptionCreate) -> dict:
+        # Check if tenant has a complete profile
+        tenant = await self.tenant_repository.get_by_id(subscription.tenant_id)
+        if not tenant:
+            raise SubscriptionServiceError(f"Tenant {subscription.tenant_id} not found")
+        
+        required_fields = ["establishment_name", "phone", "cpf_cnpj", "business_address"]
+        missing = [f for f in required_fields if not tenant.get(f)]
+        if missing:
+            raise SubscriptionServiceError(
+                f"Tenant profile is incomplete. Mandatory fields missing: {', '.join(missing)}"
+            )
+
         # We check for an active subscription to upgrade/update
         existing = await self.repository.get_by_tenant(subscription.tenant_id, is_active=True)
         

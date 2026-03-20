@@ -5,6 +5,7 @@ from src.core.logging import get_logger
 
 logger = get_logger(__name__)
 from src.repositories.subscription_repository import SubscriptionRepository
+from src.repositories.tenant_repository import TenantRepository
 from src.repositories.coupon_repository import CouponRepository
 from src.repositories.plan_repository import PlanRepository
 from src.services.subscription_service import SubscriptionService, SubscriptionServiceError
@@ -37,12 +38,13 @@ def register_subscription_tools(mcp: FastMCP) -> None:
         try:
             db = get_database()
             repo = SubscriptionRepository(db)
+            tenant_repo = TenantRepository(db)
             coupon_repo = CouponRepository(db)
             plan_repo = PlanRepository(db)
             
             coupon_service = CouponService(coupon_repo)
             plan_service = PlanService(plan_repo)
-            service = SubscriptionService(repo, coupon_service, plan_service)
+            service = SubscriptionService(repo, tenant_repo, coupon_service, plan_service)
             
             sub_in = SubscriptionCreate(
                 tenant_id=tenant_id,
@@ -65,13 +67,14 @@ def register_subscription_tools(mcp: FastMCP) -> None:
         try:
             db = get_database()
             repo = SubscriptionRepository(db)
+            tenant_repo = TenantRepository(db)
             coupon_repo = CouponRepository(db)
             plan_repo = PlanRepository(db)
             
             coupon_service = CouponService(coupon_repo)
             plan_service = PlanService(plan_repo)
-            service = SubscriptionService(repo, coupon_service, plan_service)
-
+            service = SubscriptionService(repo, tenant_repo, coupon_service, plan_service)
+ 
             sub_out = await service.get_subscription(tenant_id, is_active)
             return f"Subscription found: {sub_out}"
         except Exception as e:
@@ -99,12 +102,13 @@ def register_subscription_tools(mcp: FastMCP) -> None:
         try:
             db = get_database()
             repo = SubscriptionRepository(db)
+            tenant_repo = TenantRepository(db)
             coupon_repo = CouponRepository(db)
             plan_repo = PlanRepository(db)
             
             coupon_service = CouponService(coupon_repo)
             plan_service = PlanService(plan_repo)
-            service = SubscriptionService(repo, coupon_service, plan_service)
+            service = SubscriptionService(repo, tenant_repo, coupon_service, plan_service)
             
             update_in = SubscriptionUpdate(
                 plan=plan,
@@ -130,13 +134,14 @@ def register_subscription_tools(mcp: FastMCP) -> None:
         try:
             db = get_database()
             repo = SubscriptionRepository(db)
+            tenant_repo = TenantRepository(db)
             coupon_repo = CouponRepository(db)
             plan_repo = PlanRepository(db)
             
             coupon_service = CouponService(coupon_repo)
             plan_service = PlanService(plan_repo)
-            service = SubscriptionService(repo, coupon_service, plan_service)
-
+            service = SubscriptionService(repo, tenant_repo, coupon_service, plan_service)
+ 
             result = await service.cancel_subscription(tenant_id, reason)
             return f"Subscription cancelled successfully: {result}"
         except Exception as e:

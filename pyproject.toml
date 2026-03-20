@@ -29,6 +29,7 @@ dependencies = [
     "pydantic>=2.4.0",
     "pydantic-settings>=2.0.0",
     "mercadopago>=2.2.0",
+    "validate-docbr>=1.10.0",
 ]
 
 [project.optional-dependencies]

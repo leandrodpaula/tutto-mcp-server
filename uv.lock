@@ -1801,6 +1801,7 @@ dependencies = [
     { name = "motor" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "validate-docbr" },
 ]
 
 [package.optional-dependencies]
@@ -1824,6 +1825,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
+    { name = "validate-docbr", specifier = ">=1.10.0" },
 ]
 provides-extras = ["dev"]
 
@@ -1878,6 +1880,14 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/32/ce/eeb58ae4ac36fe09e3842eb02e0eb676bf2c53ae062b98f1b2531673efdd/uvicorn-0.41.0.tar.gz", hash = "sha256:09d11cf7008da33113824ee5a1c6422d89fbc2ff476540d69a34c87fab8b571a", size = 82633, upload-time = "2026-02-16T23:07:24.1Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/83/e4/d04a086285c20886c0daad0e026f250869201013d18f81d9ff5eada73a88/uvicorn-0.41.0-py3-none-any.whl", hash = "sha256:29e35b1d2c36a04b9e180d4007ede3bcb32a85fbdfd6c6aeb3f26839de088187", size = 68783, upload-time = "2026-02-16T23:07:22.357Z" },
+]
+
+[[package]]
+name = "validate-docbr"
+version = "1.11.1"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/7d/68e162b18b3620e1b0ddbc4831f8db01e3487b1d6ef4407017fec6c45e0d/validate_docbr-1.11.1-py3-none-any.whl", hash = "sha256:dcd58ba672f0661f387515e42a26e9fc201b437498b9de7e96369a7e9563f36c", size = 20637, upload-time = "2025-06-18T15:27:45.672Z" },
 ]
 
 [[package]]

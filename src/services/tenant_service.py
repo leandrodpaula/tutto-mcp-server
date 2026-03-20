@@ -11,10 +11,11 @@ class TenantService:
         self.repository = repository
 
     async def create_tenant(self, tenant: TenantCreate) -> dict:
-        # Check if tenant with same document or phone already exists
-        existing_doc = await self.repository.collection.find_one({"document": tenant.document})
-        if existing_doc:
-            raise TenantServiceError("Tenant with this document already exists")
+        # Check if tenant with same cpf_cnpj already exists (if provided)
+        if tenant.cpf_cnpj:
+            existing_doc = await self.repository.collection.find_one({"cpf_cnpj": tenant.cpf_cnpj})
+            if existing_doc:
+                raise TenantServiceError("Tenant with this CPF/CNPJ already exists")
         
         existing_phone = await self.repository.get_by_phone(tenant.phone)
         if existing_phone:
