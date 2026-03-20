@@ -9,9 +9,18 @@ class PaymentService:
     async def create_payment_link(self, tenant_id: str, plan_name: str, price: float) -> str:
         """
         Creates a Mercado Pago preference and returns the init_point (payment link).
+        Supports different installment rules for Monthly and Annual plans.
         """
         if price <= 0:
             return "No payment required for this plan."
+
+        # Define installment rules based on plan name
+        # Default to 1 (Monthly)
+        max_installments = 1
+        plan_lower = plan_name.lower()
+        
+        if "anual" in plan_lower or "annual" in plan_lower:
+            max_installments = 10
 
         preference_data: Dict[str, Any] = {
             "items": [
@@ -23,6 +32,15 @@ class PaymentService:
                 }
             ],
             "external_reference": tenant_id,
+            "payment_methods": {
+                "installments": max_installments,
+                "excluded_payment_types": [
+                    {"id": "ticket"},
+                    {"id": "atm"},
+                    {"id": "debit_card"},
+                    {"id": "prepaid_card"}
+                ]
+            },
             "back_urls": {
                 "success": f"{settings.MERCADO_PAGO_BACK_URL_BASE}/success",
                 "failure": f"{settings.MERCADO_PAGO_BACK_URL_BASE}/failure",
