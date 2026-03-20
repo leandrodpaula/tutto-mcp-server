@@ -33,15 +33,26 @@ class SubscriptionService:
         except PlanServiceError as e:
             raise SubscriptionServiceError(f"Plan validation failed: {str(e)}")
             
+        # Handle start and expiration dates based on type
+        if not subscription.starts_at:
+            subscription.starts_at = datetime.utcnow()
+            
+        if not subscription.expires_at:
+            if subscription.type == "monthly":
+                subscription.expires_at = subscription.starts_at + timedelta(days=30)
+            elif subscription.type == "annual":
+                subscription.expires_at = subscription.starts_at + timedelta(days=365)
+
         # Handle free plan coupon logic
         if subscription.plan == "free":
             if not subscription.coupon:
                 raise SubscriptionServiceError("A coupon is required for the free plan.")
             
-            # Validate coupon and calculate expires_at
+            # Validate coupon and calculate expires_at (overriding default if needed, 
+            # though usually free plan has its own TTL)
             try:
                 coupon_data = await self.coupon_service.validate_coupon(subscription.coupon)
-                subscription.expires_at = datetime.utcnow() + timedelta(days=coupon_data["ttl"])
+                subscription.expires_at = subscription.starts_at + timedelta(days=coupon_data["ttl"])
             except CouponServiceError as e:
                 raise SubscriptionServiceError(f"Coupon validation failed: {str(e)}")
 

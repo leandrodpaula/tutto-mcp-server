@@ -19,8 +19,7 @@ def register_subscription_tools(mcp: FastMCP) -> None:
         tenant_id: str,
         plan: str,
         status: str = "active",
-        starts_at: Optional[str] = None,
-        expires_at: Optional[str] = None,
+        type: Literal["monthly", "annual"] = "monthly",
         coupon: Optional[str] = None,
         is_free: bool = False
     ) -> str:
@@ -31,8 +30,7 @@ def register_subscription_tools(mcp: FastMCP) -> None:
             tenant_id: The ID of the tenant.
             plan: The subscription plan name (e.g., 'silver', 'gold').
             status: Initial status (default: 'active').
-            starts_at: ISO start date (optional).
-            expires_at: ISO expiration date (optional).
+            type: Subscription type ('monthly' or 'annual').
             coupon: Optional coupon code.
             is_free: If True, skips payment link generation.
         """
@@ -46,15 +44,11 @@ def register_subscription_tools(mcp: FastMCP) -> None:
             plan_service = PlanService(plan_repo)
             service = SubscriptionService(repo, coupon_service, plan_service)
             
-            parsed_starts = datetime.fromisoformat(starts_at) if starts_at else None
-            parsed_expires = datetime.fromisoformat(expires_at) if expires_at else None
-
             sub_in = SubscriptionCreate(
                 tenant_id=tenant_id,
                 plan=plan,
                 status=status,
-                starts_at=parsed_starts,
-                expires_at=parsed_expires,
+                type=type,
                 coupon=coupon,
                 is_free=is_free
             )

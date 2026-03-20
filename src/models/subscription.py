@@ -9,6 +9,7 @@ class SubscriptionCreate(BaseModel):
     status: Literal["active", "inactive", "cancelled", "expired"] = Field(
         "active", json_schema_extra={"example": "active"}
     )
+    type: Literal["monthly", "annual"] = Field("monthly", json_schema_extra={"example": "monthly"})
     starts_at: Optional[datetime] = Field(None, json_schema_extra={"example": "2026-03-18T00:00:00"})
     expires_at: Optional[datetime] = Field(None, json_schema_extra={"example": "2026-04-18T00:00:00"})
     coupon: Optional[str] = Field(None, json_schema_extra={"example": "TUTTO30"})
@@ -19,6 +20,7 @@ class SubscriptionUpdate(BaseModel):
     status: Optional[Literal["active", "inactive", "cancelled", "expired"]] = Field(
         None, json_schema_extra={"example": "active"}
     )
+    type: Optional[Literal["monthly", "annual"]] = Field(None, json_schema_extra={"example": "monthly"})
     expires_at: Optional[datetime] = Field(None, json_schema_extra={"example": "2026-05-18T00:00:00"})
     is_free: Optional[bool] = Field(None, json_schema_extra={"example": True})
 
@@ -27,6 +29,7 @@ class SubscriptionOut(BaseModel):
     tenant_id: str
     plan: str
     status: str
+    type: Literal["monthly", "annual"] = "monthly"
     starts_at: Optional[datetime]
     expires_at: Optional[datetime]
     coupon: Optional[str]
