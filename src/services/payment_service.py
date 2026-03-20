@@ -6,7 +6,7 @@ class PaymentService:
     def __init__(self):
         self.sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
 
-    async def create_payment_link(self, tenant_id: str, plan_name: str, price: float) -> str:
+    async def create_payment_link(self, subscription_id: str, plan_name: str, price: float) -> str:
         """
         Creates a Mercado Pago preference and returns the init_point (payment link).
         Supports different installment rules for Monthly and Annual plans.
@@ -31,7 +31,7 @@ class PaymentService:
                     "currency_id": "BRL"
                 }
             ],
-            "external_reference": tenant_id,
+            "external_reference": subscription_id,
             "payment_methods": {
                 "installments": max_installments,
                 "excluded_payment_types": [

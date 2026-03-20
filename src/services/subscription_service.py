@@ -76,19 +76,6 @@ class SubscriptionService:
             except CouponServiceError as e:
                 raise SubscriptionServiceError(f"Coupon validation failed: {str(e)}")
 
-        # Generate payment link if applicable
-        payment_link = None
-        if price > 0 and not subscription.is_free:
-            try:
-                payment_link = await self.payment_service.create_payment_link(
-                    subscription.tenant_id, 
-                    subscription.plan, 
-                    price
-                )
-            except Exception as e:
-                logger.error(f"Failed to generate payment link: {str(e)}")
-                payment_link = "Error generating link. Contact support."
-
         if existing:
             # Upgrade existing subscription
             update_data = SubscriptionUpdate(
@@ -101,13 +88,27 @@ class SubscriptionService:
             result = await self.repository.update_by_tenant(subscription.tenant_id, update_data)
             if not result:
                 raise SubscriptionServiceError("Failed to update existing subscription")
-            result["payment_link"] = payment_link
-            return result
+        else:
+            # Create new subscription
+            result = await self.repository.create(subscription)
+            if not result:
+                raise SubscriptionServiceError("Failed to create subscription")
+
+        # Generate payment link if applicable
+        payment_link = None
+        if price > 0 and not subscription.is_free:
+            try:
+                payment_link = await self.payment_service.create_payment_link(
+                    result["id"], 
+                    subscription.plan, 
+                    price
+                )
+            except Exception as e:
+                logger.error(f"Failed to generate payment link: {str(e)}")
+                payment_link = "Error generating link. Contact support."
         
-        # Create new subscription
-        created = await self.repository.create(subscription)
-        created["payment_link"] = payment_link
-        return created
+        result["payment_link"] = payment_link
+        return result
 
     async def get_subscription(self, tenant_id: str, is_active: Optional[bool] = True) -> dict:
         subscription = await self.repository.get_by_tenant(tenant_id, is_active=is_active)
