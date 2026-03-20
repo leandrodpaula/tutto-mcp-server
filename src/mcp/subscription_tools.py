@@ -83,7 +83,7 @@ def register_subscription_tools(mcp: FastMCP) -> None:
         tenant_id: str,
         plan: Optional[str] = None,
         status: Optional[str] = None,
-        expires_at: Optional[str] = None,
+        type: Optional[Literal["monthly", "annual"]] = None,
         is_free: Optional[bool] = None
     ) -> str:
         """
@@ -93,7 +93,7 @@ def register_subscription_tools(mcp: FastMCP) -> None:
             tenant_id: The ID of the tenant.
             plan: New plan name (optional).
             status: New status (optional).
-            expires_at: ISO expiration date (optional).
+            type: New subscription type (optional, 'monthly' or 'annual').
             is_free: Optional boolean flag.
         """
         try:
@@ -106,12 +106,10 @@ def register_subscription_tools(mcp: FastMCP) -> None:
             plan_service = PlanService(plan_repo)
             service = SubscriptionService(repo, coupon_service, plan_service)
             
-            parsed_expires = datetime.fromisoformat(expires_at) if expires_at else None
-
             update_in = SubscriptionUpdate(
                 plan=plan,
                 status=status,
-                expires_at=parsed_expires,
+                type=type,
                 is_free=is_free
             )
             result = await service.update_subscription(tenant_id, update_in)

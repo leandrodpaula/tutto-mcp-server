@@ -110,6 +110,14 @@ class SubscriptionService:
             except PlanServiceError as e:
                 raise SubscriptionServiceError(f"Plan validation failed: {str(e)}")
 
+        # If type is being updated, recalculate expires_at from starts_at
+        if subscription_update.type:
+            starts_at = existing.get("starts_at") or datetime.utcnow()
+            if subscription_update.type == "monthly":
+                subscription_update.expires_at = starts_at + timedelta(days=30)
+            elif subscription_update.type == "annual":
+                subscription_update.expires_at = starts_at + timedelta(days=365)
+
         updated = await self.repository.update_by_tenant(tenant_id, subscription_update)
         if not updated:
             raise SubscriptionServiceError("Failed to update subscription")
