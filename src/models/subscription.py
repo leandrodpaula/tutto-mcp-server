@@ -23,6 +23,7 @@ class SubscriptionUpdate(BaseModel):
     type: Optional[Literal["monthly", "annual"]] = Field(None, json_schema_extra={"example": "monthly"})
     expires_at: Optional[datetime] = Field(None, json_schema_extra={"example": "2026-05-18T00:00:00"})
     is_free: Optional[bool] = Field(None, json_schema_extra={"example": True})
+    cancel_reason: Optional[str] = Field(None, json_schema_extra={"example": "Customer requested"})
 
 class SubscriptionOut(BaseModel):
     id: PyObjectId = Field(..., alias="id")
@@ -34,6 +35,7 @@ class SubscriptionOut(BaseModel):
     expires_at: Optional[datetime]
     coupon: Optional[str]
     is_free: bool = False
+    cancel_reason: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

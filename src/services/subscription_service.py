@@ -123,17 +123,13 @@ class SubscriptionService:
             raise SubscriptionServiceError("Failed to update subscription")
         return updated
 
-    async def cancel_subscription(self, tenant_id: str) -> dict:
+    async def cancel_subscription(self, tenant_id: str, reason: Optional[str] = None) -> dict:
         existing = await self.repository.get_by_tenant(tenant_id, is_active=True)
         if not existing:
             raise SubscriptionServiceError(f"No active subscription found for tenant {tenant_id}")
         
         # When cancelling, we set status and is_active=False
-        cancel_update = SubscriptionUpdate(status="cancelled")
-        # SubscriptionUpdate doesn't have is_active, so I'll just use status for now 
-        # as it's the standard. If I need is_active I'd need to update the model.
-        # But wait, the repository doesn't have is_active in Update model.
-        # I'll just update the status as before.
+        cancel_update = SubscriptionUpdate(status="cancelled", cancel_reason=reason)
         updated = await self.repository.update_by_tenant(tenant_id, cancel_update)
         if not updated:
             raise SubscriptionServiceError("Failed to cancel subscription")

@@ -119,8 +119,14 @@ def register_subscription_tools(mcp: FastMCP) -> None:
             raise
 
     @mcp.tool()
-    async def cancel_subscription(tenant_id: str) -> str:
-        """Cancels a subscription."""
+    async def cancel_subscription(tenant_id: str, reason: Optional[str] = None) -> str:
+        """
+        Cancels a subscription.
+
+        Args:
+            tenant_id: The ID of the tenant.
+            reason: Optional reason for cancellation.
+        """
         try:
             db = get_database()
             repo = SubscriptionRepository(db)
@@ -131,7 +137,7 @@ def register_subscription_tools(mcp: FastMCP) -> None:
             plan_service = PlanService(plan_repo)
             service = SubscriptionService(repo, coupon_service, plan_service)
 
-            result = await service.cancel_subscription(tenant_id)
+            result = await service.cancel_subscription(tenant_id, reason)
             return f"Subscription cancelled successfully: {result}"
         except Exception as e:
             logger.error(f"Error cancelling subscription for tenant {tenant_id}: {str(e)}")
