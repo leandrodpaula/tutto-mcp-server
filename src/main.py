@@ -16,6 +16,7 @@ from src.mcp.subscription_tools import register_subscription_tools
 from src.mcp.coupon_tools import register_coupon_tools
 from src.mcp.plan_tools import register_plan_tools
 from src.mcp.schedule_tools import register_schedule_tools
+from src.mcp.message_tools import register_message_tools
 from src.core.config import settings
 from src.core.database import connect_to_mongo, close_mongo_connection
 from src.core.logging import setup_logging, get_logger
@@ -50,6 +51,7 @@ register_subscription_tools(mcp)
 register_coupon_tools(mcp)
 register_plan_tools(mcp)
 register_schedule_tools(mcp)
+register_message_tools(mcp)
 
 
 
