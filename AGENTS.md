@@ -41,7 +41,7 @@ A arquitetura é **camada e orientada ao domínio**, com persistência em **Mong
 | Black / Ruff / mypy | Formatação, lint e type checking |
 | uv | Gerenciamento de dependências e ambiente virtual |
 | Docker | Containerização |
-| Terraform (GCP) | Infraestrutura como código |
+| Terraform (GCP / Alibaba Cloud) | Infraestrutura como código |
 | GitHub Actions | CI/CD |
 
 ---
@@ -71,7 +71,7 @@ src/
 └── main.py            # Ponto de entrada FastMCP + lifespan + healthz
 
 tests/                 # Testes com pytest
-terraform/             # IaC para GCP (Cloud Run, Artifact Registry, Secret Manager)
+terraform/             # IaC para GCP e Alibaba Cloud
 scripts/               # Scripts utilitários (ex: init_database.py)
 ```
 
@@ -214,12 +214,24 @@ Use `.env.example` como base para criar seu `.env` local.
 
 ### GCP (Produção/Homologação)
 
-A aplicação roda no **Google Cloud Run**, provisionada via Terraform em `terraform/`:
+A aplicação pode rodar no **Google Cloud Run**, provisionada via Terraform em `terraform/gcp`:
 
 - **Cloud Run**: serviço serverless autoescalável (0–3 instâncias, 256Mi, CPU idle).
 - **Artifact Registry**: imagens Docker privadas.
 - **Secret Manager**: segredos injetados diretamente nos containers.
 - **Backend Terraform**: estado salvo em GCS (`<project_id>-tfstate`).
+
+### Alibaba Cloud (Produção/Homologação)
+
+Infraestrutura equivalente provisionada via Terraform em `terraform/alibaba`:
+
+- **SAE (Serverless App Engine)**: serviço serverless containerizado (equivalente ao Cloud Run).
+- **ACR (Container Registry)**: repositório privado de imagens Docker.
+- **KMS Secret**: armazenamento seguro da connection string MongoDB.
+- **RAM Role**: permissões para a aplicação acessar KMS e ACR.
+- **VPC + VSwitch + Security Group**: rede privada para o SAE.
+- **SLB + SAE Ingress**: exposição pública do serviço via load balancer.
+- **Backend Terraform**: estado salvo em OSS (Object Storage Service).
 
 ### CI/CD (GitHub Actions)
 
@@ -235,14 +247,16 @@ O deploy é acionado via `workflow_dispatch` (manual) ou schedule.
 ### Scripts auxiliares
 
 - `build.sh`: faz build e push da imagem via `gcloud builds submit`.
-- `terraform.sh`: inicializa o Terraform localmente apontando para o backend GCS.
+- `terraform.sh`: inicializa o Terraform GCP localmente apontando para o backend GCS.
+- `terraform-alibaba.sh`: inicializa o Terraform Alibaba Cloud apontando para o backend OSS.
 
 ---
 
 ## Considerações de Segurança
 
 - **Não hardcode secrets** no código ou no Terraform.
-- O `MONGODB_URL` em produção é injetado pelo **Google Secret Manager**.
+- O `MONGODB_URL` em produção GCP é injetado pelo **Google Secret Manager**.
+- O `MONGODB_URL` em produção Alibaba Cloud é injetado pelo **KMS Secret**.
 - O serviço Cloud Run é exposto publicamente (`allUsers` com `roles/run.invoker`).
 - Tokens de autenticação de tenant são gerados automaticamente (`secrets.token_hex(16)`) no `TenantService`.
 - A validação de CPF/CNPJ usa a biblioteca `validate-docbr` nos modelos Pydantic.
