@@ -8,9 +8,12 @@ from src.repositories.user_repository import UserRepository
 from src.services.user_service import UserService, UserServiceError
 from src.models.user import UserCreate, UserUpdate
 
+
 def register_user_tools(mcp: FastMCP) -> None:
     @mcp.tool()
-    async def create_user(tenant_id: str, phone: str, nome: str, email: Optional[str] = None) -> str:
+    async def create_user(
+        tenant_id: str, phone: str, nome: str, email: Optional[str] = None
+    ) -> str:
         """
         Registers a new user for a specific tenant.
 
@@ -19,7 +22,7 @@ def register_user_tools(mcp: FastMCP) -> None:
             phone: The user's phone number
             nome: The user's name
             email: The user's email address (optional)
-        
+
         Returns:
             A string with the created user details or error message.
         """
@@ -27,7 +30,7 @@ def register_user_tools(mcp: FastMCP) -> None:
             db = get_database()
             repo = UserRepository(db)
             service = UserService(repo)
-            
+
             user_in = UserCreate(tenant_id=tenant_id, phone=phone, nome=nome, email=email)
             user_out = await service.create_user(user_in)
             return f"User registered successfully: {user_out}"
@@ -42,7 +45,7 @@ def register_user_tools(mcp: FastMCP) -> None:
 
         Args:
             user_id: The unique ID of the user
-        
+
         Returns:
             A string with the user details or error message.
         """
@@ -50,7 +53,7 @@ def register_user_tools(mcp: FastMCP) -> None:
             db = get_database()
             repo = UserRepository(db)
             service = UserService(repo)
-            
+
             user_out = await service.get_user(user_id)
             return f"User found: {user_out}"
         except Exception as e:
@@ -58,7 +61,12 @@ def register_user_tools(mcp: FastMCP) -> None:
             raise
 
     @mcp.tool()
-    async def update_user(user_id: str, phone: Optional[str] = None, nome: Optional[str] = None, email: Optional[str] = None) -> str:
+    async def update_user(
+        user_id: str,
+        phone: Optional[str] = None,
+        nome: Optional[str] = None,
+        email: Optional[str] = None,
+    ) -> str:
         """
         Updates an existing user's information.
 
@@ -67,7 +75,7 @@ def register_user_tools(mcp: FastMCP) -> None:
             phone: The new phone number (optional)
             nome: The new name (optional)
             email: The new email address (optional)
-        
+
         Returns:
             A string with the updated user details or error message.
         """
@@ -75,7 +83,7 @@ def register_user_tools(mcp: FastMCP) -> None:
             db = get_database()
             repo = UserRepository(db)
             service = UserService(repo)
-            
+
             user_update = UserUpdate(phone=phone, nome=nome, email=email)
             user_out = await service.update_user(user_id, user_update)
             return f"User updated successfully: {user_out}"
@@ -91,7 +99,7 @@ def register_user_tools(mcp: FastMCP) -> None:
         Args:
             tenant_id: The ID of the tenant
             phone: The user's phone number
-        
+
         Returns:
             A string with the user details or error message.
         """
@@ -99,7 +107,7 @@ def register_user_tools(mcp: FastMCP) -> None:
             db = get_database()
             repo = UserRepository(db)
             service = UserService(repo)
-            
+
             user_out = await service.find_user_by_phone(tenant_id, phone)
             return f"User found: {user_out}"
         except Exception as e:
@@ -113,7 +121,7 @@ def register_user_tools(mcp: FastMCP) -> None:
 
         Args:
             tenant_id: The identification of the tenant
-        
+
         Returns:
             A string with the list of users or error message.
         """
@@ -121,7 +129,7 @@ def register_user_tools(mcp: FastMCP) -> None:
             db = get_database()
             repo = UserRepository(db)
             service = UserService(repo)
-            
+
             users = await service.list_users_by_tenant(tenant_id)
             return f"Users for tenant {tenant_id}: {users}"
         except Exception as e:

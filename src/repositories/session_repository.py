@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from src.models.session import SessionCreate
 from src.core.config import settings
 
+
 class SessionRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["sessions"]
@@ -26,8 +27,8 @@ class SessionRepository:
         return mapped
 
     async def get_by_user(self, user_id: str, tenant_id: str) -> List[dict]:
-        cursor = self.collection.find(
-            {"user_id": user_id, "tenant_id": tenant_id}
-        ).sort("created_at", 1)
+        cursor = self.collection.find({"user_id": user_id, "tenant_id": tenant_id}).sort(
+            "created_at", 1
+        )
         docs = await cursor.to_list(length=1000)
         return [self._map_doc(doc) for doc in docs if doc]

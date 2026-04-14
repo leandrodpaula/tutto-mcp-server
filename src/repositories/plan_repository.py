@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime
 from src.models.plan import PlanCreate, PlanUpdate
 
+
 class PlanRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["plans"]
@@ -18,11 +19,7 @@ class PlanRepository:
         plan_dict["created_at"] = datetime.utcnow()
         plan_dict["updated_at"] = datetime.utcnow()
         plan_dict["price_history"] = [
-            {
-                "price": plan.price,
-                "changed_at": datetime.utcnow(),
-                "reason": "Initial price"
-            }
+            {"price": plan.price, "changed_at": datetime.utcnow(), "reason": "Initial price"}
         ]
         result = await self.collection.insert_one(plan_dict)
         doc = await self.collection.find_one({"_id": result.inserted_id})
@@ -66,19 +63,15 @@ class PlanRepository:
             history_entry = {
                 "price": update_data["price"],
                 "changed_at": datetime.utcnow(),
-                "reason": change_reason or "Price update"
+                "reason": change_reason or "Price update",
             }
             await self.collection.update_one(
-                {"_id": ObjectId(plan_id)},
-                {"$push": {"price_history": history_entry}}
+                {"_id": ObjectId(plan_id)}, {"$push": {"price_history": history_entry}}
             )
 
         update_data["updated_at"] = datetime.utcnow()
 
-        await self.collection.update_one(
-            {"_id": ObjectId(plan_id)},
-            {"$set": update_data}
-        )
+        await self.collection.update_one({"_id": ObjectId(plan_id)}, {"$set": update_data})
 
         doc = await self.collection.find_one({"_id": ObjectId(plan_id)})
         return self._map_doc(doc)

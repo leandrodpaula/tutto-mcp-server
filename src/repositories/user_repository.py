@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime
 from src.models.user import UserCreate, UserUpdate
 
+
 class UserRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["users"]
@@ -38,18 +39,15 @@ class UserRepository:
     async def update(self, user_id: str, user_update: UserUpdate) -> Optional[dict]:
         if not ObjectId.is_valid(user_id):
             return None
-        
+
         update_data = user_update.model_dump(exclude_unset=True)
         if not update_data:
             return await self.get_by_id(user_id)
-            
+
         update_data["updated_at"] = datetime.utcnow()
-        
-        await self.collection.update_one(
-            {"_id": ObjectId(user_id)},
-            {"$set": update_data}
-        )
-        
+
+        await self.collection.update_one({"_id": ObjectId(user_id)}, {"$set": update_data})
+
         doc = await self.collection.find_one({"_id": ObjectId(user_id)})
         return self._map_doc(doc)
 

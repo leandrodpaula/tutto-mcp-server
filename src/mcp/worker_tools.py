@@ -7,6 +7,7 @@ from src.core.logging import get_logger
 
 logger = get_logger(__name__)
 
+
 def register_worker_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def fetch_pending_events(collection_name: str) -> List[Dict[str, Any]]:
@@ -26,7 +27,9 @@ def register_worker_tools(mcp: FastMCP) -> None:
             raise
 
     @mcp.tool()
-    async def update_event_status(collection_name: str, event_id: str, status: str, error: Optional[str] = None) -> bool:
+    async def update_event_status(
+        collection_name: str, event_id: str, status: str, error: Optional[str] = None
+    ) -> bool:
         """
         Update the status of an event.
         """
@@ -35,14 +38,15 @@ def register_worker_tools(mcp: FastMCP) -> None:
             update_data = {"status": status, "updated_at": datetime.now()}
             if error:
                 update_data["error"] = error
-                
+
             result = await db[collection_name].update_one(
-                {"_id": ObjectId(event_id)},
-                {"$set": update_data}
+                {"_id": ObjectId(event_id)}, {"$set": update_data}
             )
             return result.modified_count > 0
         except Exception as e:
-            logger.error(f"Error updating event status for {event_id} in {collection_name}: {str(e)}")
+            logger.error(
+                f"Error updating event status for {event_id} in {collection_name}: {str(e)}"
+            )
             raise
 
     @mcp.tool()
@@ -52,11 +56,9 @@ def register_worker_tools(mcp: FastMCP) -> None:
         """
         try:
             db = get_database()
-            customer = await db["customers"].find_one({
-                "customerId": customer_id,
-                "phone": phone,
-                "is_active": True
-            })
+            customer = await db["customers"].find_one(
+                {"customerId": customer_id, "phone": phone, "is_active": True}
+            )
             if customer:
                 customer["_id"] = str(customer["_id"])
             return customer
@@ -90,7 +92,7 @@ def register_worker_tools(mcp: FastMCP) -> None:
                 response_data["created_at"] = datetime.now()
             if "updated_at" not in response_data:
                 response_data["updated_at"] = datetime.now()
-                
+
             result = await db[collection_name].insert_one(response_data)
             return str(result.inserted_id)
         except Exception as e:

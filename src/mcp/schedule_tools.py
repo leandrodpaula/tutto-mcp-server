@@ -9,6 +9,7 @@ from src.repositories.schedule_repository import ScheduleRepository
 from src.services.schedule_service import ScheduleService, ScheduleServiceError
 from src.models.schedule import ScheduleCreate, ScheduleUpdate
 
+
 def register_schedule_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def create_schedule(
@@ -75,7 +76,9 @@ def register_schedule_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def list_schedules(
         tenant_id: str,
-        status: Optional[Literal["pending", "confirmed", "cancelled", "completed", "no_show"]] = None,
+        status: Optional[
+            Literal["pending", "confirmed", "cancelled", "completed", "no_show"]
+        ] = None,
         date_from: Optional[str] = None,
         date_to: Optional[str] = None,
     ) -> str:
@@ -139,7 +142,9 @@ def register_schedule_tools(mcp: FastMCP) -> None:
     async def update_schedule(
         schedule_id: str,
         scheduled_at: Optional[str] = None,
-        status: Optional[Literal["pending", "confirmed", "cancelled", "completed", "no_show"]] = None,
+        status: Optional[
+            Literal["pending", "confirmed", "cancelled", "completed", "no_show"]
+        ] = None,
         notes: Optional[str] = None,
     ) -> str:
         """

@@ -30,7 +30,11 @@ class EvolutionService:
             raise EvolutionServiceError(f"Resposta inválida da API: {response.text}") from exc
 
         if response.status_code >= 400 or data.get("error"):
-            msg = data.get("response", {}).get("message") if isinstance(data.get("response"), dict) else None
+            msg = (
+                data.get("response", {}).get("message")
+                if isinstance(data.get("response"), dict)
+                else None
+            )
             if not msg:
                 msg = data.get("message", data)
             raise EvolutionServiceError(msg)
@@ -70,7 +74,9 @@ class EvolutionService:
                 )
                 return self._handle_response(response)
         except httpx.TimeoutException as exc:
-            raise EvolutionServiceError("Tempo esgotado ao criar instância na Evolution API.") from exc
+            raise EvolutionServiceError(
+                "Tempo esgotado ao criar instância na Evolution API."
+            ) from exc
         except httpx.HTTPError as exc:
             raise EvolutionServiceError(f"Erro de comunicação com a Evolution API: {exc}") from exc
 
@@ -144,8 +150,7 @@ class EvolutionService:
                 return self._handle_response(response)
         except httpx.TimeoutException as exc:
             raise EvolutionServiceError(
-                "Tempo esgotado ao enviar mensagem."
-                " A instância pode estar desconectada."
+                "Tempo esgotado ao enviar mensagem." " A instância pode estar desconectada."
             ) from exc
         except httpx.HTTPError as exc:
             raise EvolutionServiceError(f"Erro de comunicação com a Evolution API: {exc}") from exc

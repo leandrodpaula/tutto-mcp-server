@@ -3,13 +3,15 @@ from typing import Literal, Optional
 from datetime import datetime
 from src.models.pyobjectid import PyObjectId
 
+
 class MessageCreate(BaseModel):
     tenant_id: str
     costumer_id: str
     type: str
     author: Literal["system", "user"]
     content: str
-    
+
+
 class MessageOut(BaseModel):
     id: PyObjectId = Field(..., alias="id")
     tenant_id: str

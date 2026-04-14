@@ -3,8 +3,10 @@ from src.models.tenant import TenantCreate
 from src.repositories.tenant_repository import TenantRepository
 import secrets
 
+
 class TenantServiceError(Exception):
     pass
+
 
 class TenantService:
     def __init__(self, repository: TenantRepository):
@@ -16,7 +18,7 @@ class TenantService:
             existing_doc = await self.repository.collection.find_one({"cpf_cnpj": tenant.cpf_cnpj})
             if existing_doc:
                 raise TenantServiceError("Tenant with this CPF/CNPJ already exists")
-        
+
         existing_phone = await self.repository.get_by_phone(tenant.phone)
         if existing_phone:
             raise TenantServiceError("Tenant with this phone already exists")
@@ -40,5 +42,5 @@ class TenantService:
 
         if not tenant:
             raise TenantServiceError("Tenant not found")
-            
+
         return tenant

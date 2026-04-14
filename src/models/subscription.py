@@ -3,6 +3,7 @@ from typing import Optional, Literal
 from datetime import datetime
 from src.models.pyobjectid import PyObjectId
 
+
 class SubscriptionCreate(BaseModel):
     tenant_id: str = Field(..., json_schema_extra={"example": "65f1a2b3c4d5e6f7a8b9c0d1"})
     plan: str = Field(..., json_schema_extra={"example": "basic"})
@@ -10,20 +11,30 @@ class SubscriptionCreate(BaseModel):
         "active", json_schema_extra={"example": "active"}
     )
     type: Literal["monthly", "annual"] = Field("monthly", json_schema_extra={"example": "monthly"})
-    starts_at: Optional[datetime] = Field(None, json_schema_extra={"example": "2026-03-18T00:00:00"})
-    expires_at: Optional[datetime] = Field(None, json_schema_extra={"example": "2026-04-18T00:00:00"})
+    starts_at: Optional[datetime] = Field(
+        None, json_schema_extra={"example": "2026-03-18T00:00:00"}
+    )
+    expires_at: Optional[datetime] = Field(
+        None, json_schema_extra={"example": "2026-04-18T00:00:00"}
+    )
     coupon: Optional[str] = Field(None, json_schema_extra={"example": "TUTTO30"})
     is_free: bool = Field(False, json_schema_extra={"example": False})
+
 
 class SubscriptionUpdate(BaseModel):
     plan: Optional[str] = Field(None, json_schema_extra={"example": "premium"})
     status: Optional[Literal["active", "inactive", "cancelled", "expired"]] = Field(
         None, json_schema_extra={"example": "active"}
     )
-    type: Optional[Literal["monthly", "annual"]] = Field(None, json_schema_extra={"example": "monthly"})
-    expires_at: Optional[datetime] = Field(None, json_schema_extra={"example": "2026-05-18T00:00:00"})
+    type: Optional[Literal["monthly", "annual"]] = Field(
+        None, json_schema_extra={"example": "monthly"}
+    )
+    expires_at: Optional[datetime] = Field(
+        None, json_schema_extra={"example": "2026-05-18T00:00:00"}
+    )
     is_free: Optional[bool] = Field(None, json_schema_extra={"example": True})
     cancel_reason: Optional[str] = Field(None, json_schema_extra={"example": "Customer requested"})
+
 
 class SubscriptionOut(BaseModel):
     id: PyObjectId = Field(..., alias="id")

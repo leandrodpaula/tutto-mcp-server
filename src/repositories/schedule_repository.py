@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime
 from src.models.schedule import ScheduleCreate, ScheduleUpdate
 
+
 class ScheduleRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["schedules"]
@@ -41,15 +42,14 @@ class ScheduleRepository:
 
         update_data["updated_at"] = datetime.utcnow()
 
-        await self.collection.update_one(
-            {"_id": ObjectId(schedule_id)},
-            {"$set": update_data}
-        )
+        await self.collection.update_one({"_id": ObjectId(schedule_id)}, {"$set": update_data})
 
         doc = await self.collection.find_one({"_id": ObjectId(schedule_id)})
         return self._map_doc(doc)
 
-    async def find_by_tenant(self, tenant_id: str, filters: Optional[Dict[str, Any]] = None) -> List[dict]:
+    async def find_by_tenant(
+        self, tenant_id: str, filters: Optional[Dict[str, Any]] = None
+    ) -> List[dict]:
         query: Dict[str, Any] = {"tenant_id": tenant_id}
         if filters:
             if "status" in filters:
@@ -69,9 +69,11 @@ class ScheduleRepository:
         return [self._map_doc(doc) for doc in docs if doc]
 
     async def find_by_user(self, tenant_id: str, user_id: str) -> List[dict]:
-        cursor = self.collection.find({
-            "tenant_id": tenant_id,
-            "user_id": user_id,
-        }).sort("scheduled_at", 1)
+        cursor = self.collection.find(
+            {
+                "tenant_id": tenant_id,
+                "user_id": user_id,
+            }
+        ).sort("scheduled_at", 1)
         docs = await cursor.to_list(length=200)
         return [self._map_doc(doc) for doc in docs if doc]

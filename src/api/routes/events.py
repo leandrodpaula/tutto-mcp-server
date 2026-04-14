@@ -34,9 +34,7 @@ async def receive_webhook_event(
             server_url=payload.server_url,
             apikey=payload.apikey,
         )
-        logger.info(
-            f"Webhook event saved: {payload.event} for instance {payload.instance}"
-        )
+        logger.info(f"Webhook event saved: {payload.event} for instance {payload.instance}")
         return {
             "status": "ok",
             "event_id": event["id"],

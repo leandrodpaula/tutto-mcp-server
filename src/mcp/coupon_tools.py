@@ -9,6 +9,7 @@ from src.services.coupon_service import CouponService, CouponServiceError
 from src.models.coupon import CouponCreate, CouponUpdate
 from datetime import datetime
 
+
 def register_coupon_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def create_coupon(
@@ -47,7 +48,7 @@ def register_coupon_tools(mcp: FastMCP) -> None:
                 description=description,
                 start_date=parsed_start,
                 end_date=parsed_end,
-                is_active=is_active
+                is_active=is_active,
             )
             coupon_out = await service.create_coupon(coupon_in)
             return f"Coupon created successfully: {coupon_out}"
@@ -95,10 +96,7 @@ def register_coupon_tools(mcp: FastMCP) -> None:
             repo = CouponRepository(db)
             service = CouponService(repo)
             update_in = CouponUpdate(
-                title=title,
-                description=description,
-                ttl=ttl,
-                is_active=is_active
+                title=title, description=description, ttl=ttl, is_active=is_active
             )
             coupon_out = await service.update_coupon(coupon_id, update_in)
             return f"Coupon updated successfully: {coupon_out}"

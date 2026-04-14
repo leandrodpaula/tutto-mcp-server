@@ -2,8 +2,10 @@ from typing import Optional, List, Dict, Any
 from src.models.schedule import ScheduleCreate, ScheduleUpdate
 from src.repositories.schedule_repository import ScheduleRepository
 
+
 class ScheduleServiceError(Exception):
     pass
+
 
 class ScheduleService:
     def __init__(self, repository: ScheduleRepository):
@@ -19,7 +21,9 @@ class ScheduleService:
             raise ScheduleServiceError("Schedule not found")
         return schedule
 
-    async def list_schedules(self, tenant_id: str, filters: Optional[Dict[str, Any]] = None) -> List[dict]:
+    async def list_schedules(
+        self, tenant_id: str, filters: Optional[Dict[str, Any]] = None
+    ) -> List[dict]:
         return await self.repository.find_by_tenant(tenant_id, filters)
 
     async def list_user_schedules(self, tenant_id: str, user_id: str) -> List[dict]:

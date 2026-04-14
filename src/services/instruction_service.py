@@ -2,6 +2,7 @@ from typing import List, Optional, Union
 from src.repositories.instruction_repository import InstructionRepository
 from src.models.instruction import InstructionCreate
 
+
 class InstructionService:
     def __init__(self, repository: InstructionRepository):
         self.repository = repository
@@ -21,7 +22,9 @@ class InstructionService:
             raise ValueError("Instruction not found")
         return await self.repository.update(instruction_id, {"is_active": False})
 
-    async def update_instruction(self, instruction_id: str, instruction: InstructionCreate) -> Optional[dict]:
+    async def update_instruction(
+        self, instruction_id: str, instruction: InstructionCreate
+    ) -> Optional[dict]:
         existing = await self.repository.get_by_id(instruction_id)
         if not existing:
             raise ValueError("Instruction not found")

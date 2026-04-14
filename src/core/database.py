@@ -6,11 +6,14 @@ from src.core.logging import get_logger
 
 logger = get_logger(__name__)
 
+
 class MongoDBManager:
     client: Optional[AsyncIOMotorClient] = None
     db: Optional[AsyncIOMotorDatabase] = None
 
+
 db_manager = MongoDBManager()
+
 
 async def connect_to_mongo() -> None:
     if settings.MONGODB_URL:
@@ -18,10 +21,12 @@ async def connect_to_mongo() -> None:
         db_manager.db = db_manager.client[settings.MONGODB_DATABASE_NAME]
         logger.info(f"Connected to MongoDB at {settings.MONGODB_DATABASE_NAME}")
 
+
 async def close_mongo_connection() -> None:
     if db_manager.client:
         db_manager.client.close()
         logger.info("MongoDB connection closed")
+
 
 def get_database() -> AsyncIOMotorDatabase:
     if db_manager.db is None:

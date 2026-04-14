@@ -2,8 +2,10 @@ from typing import Optional, List
 from src.models.user import UserCreate, UserUpdate
 from src.repositories.user_repository import UserRepository
 
+
 class UserServiceError(Exception):
     pass
+
 
 class UserService:
     def __init__(self, repository: UserRepository):

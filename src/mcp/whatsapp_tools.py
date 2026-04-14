@@ -44,8 +44,7 @@ def register_whatsapp_tools(mcp: FastMCP) -> None:
             qr_info = ""
             if result.get("qrcode") and result["qrcode"].get("base64"):
                 qr_info = (
-                    " QR Code gerado na criação."
-                    " Use connect_whatsapp_instance para visualizar."
+                    " QR Code gerado na criação." " Use connect_whatsapp_instance para visualizar."
                 )
             return (
                 f"Instância '{instance_name}' criada com sucesso."
@@ -72,8 +71,7 @@ def register_whatsapp_tools(mcp: FastMCP) -> None:
             qrcode = result.get("qrcode", {})
             if qrcode and qrcode.get("base64"):
                 return (
-                    f"QR Code para conexão da instância '{instance_name}':\n"
-                    f"{qrcode['base64']}"
+                    f"QR Code para conexão da instância '{instance_name}':\n" f"{qrcode['base64']}"
                 )
             status = result.get("instance", {}).get("status", "desconhecido")
             return (
@@ -112,13 +110,10 @@ def register_whatsapp_tools(mcp: FastMCP) -> None:
                 events=events,
             )
             return (
-                f"Webhook configurado com sucesso para a instância"
-                f" '{instance_name}': {result}"
+                f"Webhook configurado com sucesso para a instância" f" '{instance_name}': {result}"
             )
         except EvolutionServiceError as e:
-            logger.error(
-                f"Erro ao configurar webhook para {instance_name}: {str(e)}"
-            )
+            logger.error(f"Erro ao configurar webhook para {instance_name}: {str(e)}")
             raise
 
     @mcp.tool()
@@ -148,12 +143,7 @@ def register_whatsapp_tools(mcp: FastMCP) -> None:
                 text=text,
                 delay=delay,
             )
-            return (
-                f"Mensagem enviada com sucesso pela instância"
-                f" '{instance_name}': {result}"
-            )
+            return f"Mensagem enviada com sucesso pela instância" f" '{instance_name}': {result}"
         except EvolutionServiceError as e:
-            logger.error(
-                f"Erro ao enviar mensagem pela instância {instance_name}: {str(e)}"
-            )
+            logger.error(f"Erro ao enviar mensagem pela instância {instance_name}: {str(e)}")
             raise

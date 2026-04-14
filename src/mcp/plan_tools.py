@@ -8,6 +8,7 @@ from src.repositories.plan_repository import PlanRepository
 from src.services.plan_service import PlanService, PlanServiceError
 from src.models.plan import PlanCreate, PlanUpdate
 
+
 def register_plan_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def create_plan(
@@ -39,7 +40,7 @@ def register_plan_tools(mcp: FastMCP) -> None:
                 description=description,
                 price=price,
                 is_active=is_active,
-                features=features or []
+                features=features or [],
             )
             created = await service.create_plan(plan_in)
             return f"Plan created successfully: {created}"
@@ -81,7 +82,7 @@ def register_plan_tools(mcp: FastMCP) -> None:
                 price=price,
                 is_active=is_active,
                 change_reason=change_reason,
-                features=features
+                features=features,
             )
             plan_out = await service.update_plan(plan_id, update_in)
             return f"Plan updated successfully: {plan_out}"

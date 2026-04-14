@@ -3,6 +3,7 @@ from typing import Optional
 from bson import ObjectId
 from src.models.tenant import TenantCreate
 
+
 class TenantRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["tenants"]

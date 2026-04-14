@@ -2,6 +2,7 @@ from typing import List
 from src.models.session import SessionCreate
 from src.repositories.session_repository import SessionRepository
 
+
 class SessionService:
     def __init__(self, repository: SessionRepository):
         self.repository = repository

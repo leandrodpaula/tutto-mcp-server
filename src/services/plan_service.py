@@ -2,8 +2,10 @@ from typing import Optional, List
 from src.models.plan import PlanCreate, PlanUpdate
 from src.repositories.plan_repository import PlanRepository
 
+
 class PlanServiceError(Exception):
     pass
+
 
 class PlanService:
     def __init__(self, repository: PlanRepository):

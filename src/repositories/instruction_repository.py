@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime
 from src.models.instruction import InstructionCreate
 
+
 class InstructionRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         # Using the same collection name as user did for services to potentially migrate or just follow his lead
@@ -31,22 +32,23 @@ class InstructionRepository:
         doc = await self.collection.find_one({"_id": ObjectId(instruction_id)})
         return self._map_doc(doc) if doc else None
 
-    async def update(self, instruction_id: str, instruction: Union[InstructionCreate, dict]) -> Optional[dict]:
+    async def update(
+        self, instruction_id: str, instruction: Union[InstructionCreate, dict]
+    ) -> Optional[dict]:
         if not ObjectId.is_valid(instruction_id):
             return None
-        
+
         if isinstance(instruction, InstructionCreate):
             update_data = instruction.model_dump(exclude_unset=True)
         else:
             update_data = instruction
-            
+
         update_data["updated_at"] = datetime.utcnow()
-        
+
         result = await self.collection.update_one(
-            {"_id": ObjectId(instruction_id)},
-            {"$set": update_data}
+            {"_id": ObjectId(instruction_id)}, {"$set": update_data}
         )
-        
+
         doc = await self.collection.find_one({"_id": ObjectId(instruction_id)})
         return self._map_doc(doc) if doc else None
 
@@ -56,10 +58,8 @@ class InstructionRepository:
         return [self._map_doc(doc) for doc in docs if doc]
 
     async def search(self, tenant_id: str, query: str) -> List[dict]:
-        cursor = self.collection.find({
-            "tenant_id": tenant_id,
-            "is_active": True,
-            "name": {"$regex": query, "$options": "i"}
-        })
+        cursor = self.collection.find(
+            {"tenant_id": tenant_id, "is_active": True, "name": {"$regex": query, "$options": "i"}}
+        )
         docs = await cursor.to_list(length=100)
         return [self._map_doc(doc) for doc in docs if doc]

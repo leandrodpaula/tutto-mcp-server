@@ -4,6 +4,7 @@ from bson import ObjectId
 from src.models.message import MessageCreate
 from datetime import datetime, timezone
 
+
 class MessageRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["messages"]
@@ -15,7 +16,7 @@ class MessageRepository:
 
     async def create(self, message: MessageCreate, status: str = "pending") -> dict:
         message_dict = message.model_dump()
-        
+
         now = datetime.now(timezone.utc)
         message_dict["status"] = status
         message_dict["created_at"] = now

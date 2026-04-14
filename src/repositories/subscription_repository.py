@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 from src.models.subscription import SubscriptionCreate, SubscriptionUpdate
 
+
 class SubscriptionRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["subscriptions"]
@@ -26,7 +27,9 @@ class SubscriptionRepository:
             raise RuntimeError("Failed to retrieve created document")
         return mapped
 
-    async def get_by_tenant(self, tenant_id: str, is_active: Optional[bool] = True) -> Optional[dict]:
+    async def get_by_tenant(
+        self, tenant_id: str, is_active: Optional[bool] = True
+    ) -> Optional[dict]:
         query = {"tenant_id": tenant_id}
         if is_active is not None:
             query = {"tenant_id": tenant_id, "is_active": is_active}
@@ -34,17 +37,16 @@ class SubscriptionRepository:
         doc = await self.collection.find_one(query)
         return self._map_doc(doc)
 
-    async def update_by_tenant(self, tenant_id: str, subscription_update: SubscriptionUpdate) -> Optional[dict]:
+    async def update_by_tenant(
+        self, tenant_id: str, subscription_update: SubscriptionUpdate
+    ) -> Optional[dict]:
         update_data = subscription_update.model_dump(exclude_unset=True)
         if not update_data:
             return await self.get_by_tenant(tenant_id, is_active=True)
 
         update_data["updated_at"] = datetime.utcnow()
 
-        await self.collection.update_one(
-            {"tenant_id": tenant_id},
-            {"$set": update_data}
-        )
+        await self.collection.update_one({"tenant_id": tenant_id}, {"$set": update_data})
 
         doc = await self.collection.find_one({"tenant_id": tenant_id})
         return self._map_doc(doc)

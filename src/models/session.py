@@ -3,9 +3,11 @@ from typing import Optional, Literal
 from datetime import datetime
 from src.models.pyobjectid import PyObjectId
 
+
 class MessageData(BaseModel):
     type: str = Field(..., json_schema_extra={"example": "text"})
     content: str = Field(..., json_schema_extra={"example": "Olá, como posso ajudar?"})
+
 
 class SessionCreate(BaseModel):
     tenant_id: str = Field(..., json_schema_extra={"example": "65f1a2b3c4d5e6f7a8b9c0d1"})
@@ -13,6 +15,7 @@ class SessionCreate(BaseModel):
     session_id: Optional[str] = Field(None, json_schema_extra={"example": "session_123"})
     author: Literal["user", "agent"] = Field(..., json_schema_extra={"example": "agent"})
     message: MessageData
+
 
 class SessionOut(BaseModel):
     id: PyObjectId = Field(..., alias="id")

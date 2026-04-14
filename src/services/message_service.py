@@ -1,8 +1,10 @@
 from src.models.message import MessageCreate
 from src.repositories.message_repository import MessageRepository
 
+
 class MessageServiceError(Exception):
     pass
+
 
 class MessageService:
     def __init__(self, repository: MessageRepository):

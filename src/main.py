@@ -1,10 +1,12 @@
 """Ponto de entrada: FastAPI app com routers HTTP e MCP montado como sub-app."""
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 
+from src.api.auth import require_auth
 from src.api.routes.events import router as events_router
 from src.api.routes.health import router as health_router
 from src.api.routes.messages import router as messages_router
+from src.core.auth_middleware import MCPAuthMiddleware
 from src.core.config import settings
 from src.core.lifespan import shared_lifespan
 from src.core.logging import get_logger, setup_logging
@@ -23,11 +25,17 @@ app = FastAPI(
 
 # Registra routers HTTP
 app.include_router(health_router)
-app.include_router(messages_router)
-app.include_router(events_router)
+app.include_router(
+    messages_router,
+    dependencies=[Depends(require_auth)],
+)
+app.include_router(
+    events_router,
+    dependencies=[Depends(require_auth)],
+)
 
-# Monta o MCP como sub-app ASGI em /mcp
-app.mount("/mcp", mcp.http_app())
+# Monta o MCP como sub-app ASGI em /mcp (protegido por Basic Auth)
+app.mount("/mcp", MCPAuthMiddleware(mcp.http_app()))
 
 
 def main() -> None:

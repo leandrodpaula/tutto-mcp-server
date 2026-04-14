@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime
 from src.models.coupon import CouponCreate, CouponUpdate
 
+
 class CouponRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["coupons"]
@@ -36,14 +37,13 @@ class CouponRepository:
 
     async def list_active(self) -> List[dict]:
         now = datetime.utcnow()
-        cursor = self.collection.find({
-            "is_active": True,
-            "start_date": {"$lte": now},
-            "$or": [
-                {"end_date": None},
-                {"end_date": {"$gte": now}}
-            ]
-        })
+        cursor = self.collection.find(
+            {
+                "is_active": True,
+                "start_date": {"$lte": now},
+                "$or": [{"end_date": None}, {"end_date": {"$gte": now}}],
+            }
+        )
         docs = await cursor.to_list(length=100)
         return [self._map_doc(doc) for doc in docs if doc]
 
@@ -57,10 +57,7 @@ class CouponRepository:
 
         update_data["updated_at"] = datetime.utcnow()
 
-        await self.collection.update_one(
-            {"_id": ObjectId(coupon_id)},
-            {"$set": update_data}
-        )
+        await self.collection.update_one({"_id": ObjectId(coupon_id)}, {"$set": update_data})
 
         doc = await self.collection.find_one({"_id": ObjectId(coupon_id)})
         return self._map_doc(doc)

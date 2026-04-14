@@ -4,6 +4,7 @@ from datetime import datetime
 from src.models.pyobjectid import PyObjectId
 from validate_docbr import CPF, CNPJ
 
+
 class TenantCreate(BaseModel):
     establishment_name: str = Field(..., json_schema_extra={"example": "Tutto Barbershop"})
     phone: str = Field(..., json_schema_extra={"example": "5511999999999"})
@@ -20,10 +21,10 @@ class TenantCreate(BaseModel):
     def validate_document(cls, v: Optional[str]) -> Optional[str]:
         if not v:
             return v
-        
+
         # Remove formatting
         clean_doc = "".join(filter(str.isdigit, v))
-        
+
         if len(clean_doc) == 11:
             if not CPF().validate(clean_doc):
                 raise ValueError("Invalid CPF")
@@ -32,8 +33,9 @@ class TenantCreate(BaseModel):
                 raise ValueError("Invalid CNPJ")
         else:
             raise ValueError("Document must be a valid CPF (11 digits) or CNPJ (14 digits)")
-        
+
         return v
+
 
 class TenantOut(BaseModel):
     id: PyObjectId = Field(..., alias="id")

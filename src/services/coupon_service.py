@@ -3,8 +3,10 @@ from typing import Optional, List
 from src.models.coupon import CouponCreate, CouponUpdate
 from src.repositories.coupon_repository import CouponRepository
 
+
 class CouponServiceError(Exception):
     pass
+
 
 class CouponService:
     def __init__(self, repository: CouponRepository):
