@@ -1,4 +1,5 @@
-from typing import Optional, List
+from typing import List
+
 from src.models.plan import PlanCreate, PlanUpdate
 from src.repositories.plan_repository import PlanRepository
 

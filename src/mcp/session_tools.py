@@ -1,12 +1,14 @@
+from typing import Literal
+
 from fastmcp import FastMCP
-from typing import Optional, Literal
+
 from src.core.database import get_database
 from src.core.logging import get_logger
 
 logger = get_logger(__name__)
+from src.models.session import MessageData, SessionCreate
 from src.repositories.session_repository import SessionRepository
 from src.services.session_service import SessionService
-from src.models.session import SessionCreate, MessageData
 
 
 def register_session_tools(mcp: FastMCP) -> None:

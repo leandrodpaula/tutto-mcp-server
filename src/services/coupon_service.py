@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import List
+
 from src.models.coupon import CouponCreate, CouponUpdate
 from src.repositories.coupon_repository import CouponRepository
 

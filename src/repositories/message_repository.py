@@ -1,8 +1,9 @@
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from typing import Optional
-from bson import ObjectId
-from src.models.message import MessageCreate
 from datetime import datetime, timezone
+from typing import Optional
+
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
+from src.models.message import MessageCreate
 
 
 class MessageRepository:

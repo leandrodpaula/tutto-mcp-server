@@ -1,16 +1,18 @@
-from fastmcp import FastMCP
-from typing import Optional, Literal
+from typing import Literal, Optional
+
 from bson import ObjectId
+from fastmcp import FastMCP
+
 from src.core.database import get_database
 from src.core.logging import get_logger
 
 logger = get_logger(__name__)
-from src.repositories.tenant_repository import TenantRepository
-from src.services.tenant_service import TenantService, TenantServiceError
+from src.models.instruction import InstructionCreate
 from src.models.tenant import TenantCreate
 from src.repositories.instruction_repository import InstructionRepository
+from src.repositories.tenant_repository import TenantRepository
 from src.services.instruction_service import InstructionService
-from src.models.instruction import InstructionCreate
+from src.services.tenant_service import TenantService
 
 
 def register_tenant_tools(mcp: FastMCP) -> None:
@@ -117,7 +119,6 @@ def register_tenant_tools(mcp: FastMCP) -> None:
                 update_data["phone"] = phone
             if cpf_cnpj:
                 # Validate if provided
-                from src.models.tenant import TenantCreate
 
                 # We can't easily validate without a full model instance if we use field_validator
                 # But we can try to create a dummy instance or use the validator directly.

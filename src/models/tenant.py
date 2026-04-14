@@ -1,8 +1,10 @@
-from pydantic import BaseModel, Field, ConfigDict, field_validator
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+from validate_docbr import CNPJ, CPF
+
 from src.models.pyobjectid import PyObjectId
-from validate_docbr import CPF, CNPJ
 
 
 class TenantCreate(BaseModel):

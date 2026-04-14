@@ -1,12 +1,14 @@
+from typing import List, Optional
+
 from fastmcp import FastMCP
-from typing import Optional, List
+
 from src.core.database import get_database
 from src.core.logging import get_logger
 
 logger = get_logger(__name__)
-from src.repositories.plan_repository import PlanRepository
-from src.services.plan_service import PlanService, PlanServiceError
 from src.models.plan import PlanCreate, PlanUpdate
+from src.repositories.plan_repository import PlanRepository
+from src.services.plan_service import PlanService
 
 
 def register_plan_tools(mcp: FastMCP) -> None:

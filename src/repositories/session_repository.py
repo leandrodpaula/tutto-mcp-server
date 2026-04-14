@@ -1,8 +1,10 @@
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from typing import Optional, List
 from datetime import datetime, timedelta
-from src.models.session import SessionCreate
+from typing import List, Optional
+
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
 from src.core.config import settings
+from src.models.session import SessionCreate
 
 
 class SessionRepository:

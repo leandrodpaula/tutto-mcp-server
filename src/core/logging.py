@@ -1,6 +1,7 @@
 import logging
 import sys
 from typing import Optional
+
 from src.core.config import settings
 
 

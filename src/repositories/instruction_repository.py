@@ -1,7 +1,9 @@
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from typing import Optional, List, Union
-from bson import ObjectId
 from datetime import datetime
+from typing import List, Optional, Union
+
+from bson import ObjectId
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
 from src.models.instruction import InstructionCreate
 
 

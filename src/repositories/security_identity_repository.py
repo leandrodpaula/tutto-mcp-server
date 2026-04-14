@@ -16,24 +16,24 @@ class SecurityIdentityRepository:
         return doc
 
     async def find_by_client_id(self, client_id: str) -> Optional[dict]:
-        doc = await self.collection.find_one({"client_id": client_id})
+        doc = await self.collection.find_one({"credentials.client_id": client_id})
         return self._map_doc(doc)
 
     async def create_identity(
         self,
-        client_id: str,
-        client_secret: str,
-        name: Optional[str] = None,
-        scopes: Optional[list] = None,
-        enabled: bool = True,
+        app_name: str,
+        credentials: dict,
+        access_control: dict,
+        is_active: bool = True,
     ) -> dict:
+        now = datetime.now(timezone.utc)
         doc = {
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "name": name,
-            "scopes": scopes or [],
-            "enabled": enabled,
-            "created_at": datetime.now(timezone.utc),
+            "app_name": app_name,
+            "credentials": credentials,
+            "access_control": access_control,
+            "is_active": is_active,
+            "created_at": now,
+            "updated_at": now,
         }
         result = await self.collection.insert_one(doc)
         created = await self.collection.find_one({"_id": result.inserted_id})

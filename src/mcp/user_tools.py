@@ -1,12 +1,14 @@
-from fastmcp import FastMCP
 from typing import Optional
+
+from fastmcp import FastMCP
+
 from src.core.database import get_database
 from src.core.logging import get_logger
 
 logger = get_logger(__name__)
-from src.repositories.user_repository import UserRepository
-from src.services.user_service import UserService, UserServiceError
 from src.models.user import UserCreate, UserUpdate
+from src.repositories.user_repository import UserRepository
+from src.services.user_service import UserService
 
 
 def register_user_tools(mcp: FastMCP) -> None:

@@ -1,6 +1,8 @@
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from typing import Optional
+
 from bson import ObjectId
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
 from src.models.tenant import TenantCreate
 
 
@@ -35,3 +37,12 @@ class TenantRepository:
     async def get_by_token(self, token: str) -> Optional[dict]:
         doc = await self.collection.find_one({"token": token})
         return self._map_doc(doc)
+
+    async def update(self, tenant_id: str, data: dict) -> Optional[dict]:
+        if not ObjectId.is_valid(tenant_id):
+            return None
+        from datetime import datetime, timezone
+
+        data["updated_at"] = datetime.now(timezone.utc)
+        await self.collection.update_one({"_id": ObjectId(tenant_id)}, {"$set": data})
+        return await self.get_by_id(tenant_id)

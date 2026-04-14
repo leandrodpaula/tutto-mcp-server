@@ -1,6 +1,8 @@
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
 from src.models.subscription import SubscriptionCreate, SubscriptionUpdate
 
 

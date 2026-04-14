@@ -1,7 +1,8 @@
+import secrets
 from typing import Optional
+
 from src.models.tenant import TenantCreate
 from src.repositories.tenant_repository import TenantRepository
-import secrets
 
 
 class TenantServiceError(Exception):

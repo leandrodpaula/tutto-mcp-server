@@ -15,37 +15,53 @@ def register_security_identity_tools(mcp: FastMCP) -> None:
 
     @mcp.tool()
     async def create_security_identity(
+        app_name: str,
         client_id: str,
         client_secret: str,
-        name: Optional[str] = None,
-        scopes: Optional[List[str]] = None,
-        enabled: bool = True,
+        access_control_type: str,
+        allowed_endpoints: Optional[List[str]] = None,
+        allowed_mcp_servers: Optional[List[str]] = None,
+        is_active: bool = True,
     ) -> str:
-        """Cria uma nova identidade de segurança (client_id/client_secret) no MongoDB.
+        """Cria uma nova identidade de segurança no MongoDB.
 
         Args:
+            app_name: Nome da aplicação/identidade.
             client_id: Identificador único do cliente.
             client_secret: Segredo do cliente.
-            name: Nome descritivo (opcional).
-            scopes: Lista de permissões/escopos (opcional).
-            enabled: Se a identidade está ativa (padrão: True).
+            access_control_type: Tipo de controle de acesso (ex: WEBHOOK_HANDLER).
+            allowed_endpoints: Lista de endpoints permitidos no formato "METHOD /path".
+            allowed_mcp_servers: Lista de servidores MCP permitidos.
+            is_active: Se a identidade está ativa (padrão: True).
 
         Returns:
             Mensagem de confirmação com o ID criado.
         """
         try:
+            endpoints = []
+            for endpoint in allowed_endpoints or []:
+                parts = endpoint.split(" ", 1)
+                if len(parts) == 2:
+                    endpoints.append({"method": parts[0], "path": parts[1]})
+
+            credentials = {"client_id": client_id, "client_secret": client_secret}
+            access_control = {
+                "type": access_control_type,
+                "allowed_endpoints": endpoints,
+                "allowed_mcp_servers": allowed_mcp_servers or [],
+            }
+
             db = get_database()
             repo = SecurityIdentityRepository(db)
             identity = await repo.create_identity(
-                client_id=client_id,
-                client_secret=client_secret,
-                name=name,
-                scopes=scopes or [],
-                enabled=enabled,
+                app_name=app_name,
+                credentials=credentials,
+                access_control=access_control,
+                is_active=is_active,
             )
             return (
                 f"Security identity created successfully."
-                f" ID: {identity['id']}, client_id: {client_id}"
+                f" ID: {identity['id']}, app_name: {app_name}"
             )
         except Exception as exc:
             logger.error(f"Error creating security identity: {exc}")

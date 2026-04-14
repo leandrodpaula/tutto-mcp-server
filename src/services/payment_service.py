@@ -1,6 +1,8 @@
+from typing import Any, Dict
+
 import mercadopago
+
 from src.core.config import settings
-from typing import Dict, Any
 
 
 class PaymentService:

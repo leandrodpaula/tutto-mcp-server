@@ -1,6 +1,7 @@
-from typing import List, Optional, Union
-from src.repositories.instruction_repository import InstructionRepository
+from typing import List, Optional
+
 from src.models.instruction import InstructionCreate
+from src.repositories.instruction_repository import InstructionRepository
 
 
 class InstructionService:

@@ -1,5 +1,6 @@
-from bson import ObjectId
 from typing import Any, Callable
+
+from bson import ObjectId
 
 
 class PyObjectId(ObjectId):

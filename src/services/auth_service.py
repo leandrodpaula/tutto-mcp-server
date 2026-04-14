@@ -1,4 +1,3 @@
-
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from src.repositories.security_identity_repository import SecurityIdentityRepository
@@ -33,10 +32,11 @@ class AuthService:
         if identity is None:
             raise AuthServiceError("Invalid client_id or client_secret")
 
-        if not identity.get("enabled", True):
+        if not identity.get("is_active", True):
             raise AuthServiceError("Identity is disabled")
 
-        if identity.get("client_secret") != client_secret:
+        credentials = identity.get("credentials") or {}
+        if credentials.get("client_secret") != client_secret:
             raise AuthServiceError("Invalid client_id or client_secret")
 
         return identity
