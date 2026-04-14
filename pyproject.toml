@@ -30,6 +30,8 @@ dependencies = [
     "pydantic-settings>=2.0.0",
     "mercadopago>=2.2.0",
     "validate-docbr>=1.10.0",
+    "fastapi>=0.135.3",
+    "httpx>=0.27.0",
 ]
 
 [project.optional-dependencies]
@@ -42,7 +44,7 @@ dev = [
 ]
 
 [project.scripts]
-tutto-mcp-server = "src.main:mcp.run"
+tutto-mcp-server = "src.main:main"
 
 [project.urls]
 Homepage = "https://github.com/leandrodpaula/tutto-mcp-server"
