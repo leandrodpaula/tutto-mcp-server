@@ -3,7 +3,7 @@
 
 def test_mcp_initialization():
     """Test that the MCP server initializes correctly."""
-    from src.mcp_server import mcp
+    from src.main import mcp
 
     assert mcp is not None
     assert mcp.name == "Tutto MCP Server"

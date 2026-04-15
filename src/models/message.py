@@ -8,7 +8,7 @@ from src.models.pyobjectid import PyObjectId
 
 class MessageCreate(BaseModel):
     tenant_id: str
-    costumer_id: str
+    customer_id: str
     type: str
     author: Literal["system", "user"]
     content: str
@@ -17,7 +17,7 @@ class MessageCreate(BaseModel):
 class MessageOut(BaseModel):
     id: PyObjectId = Field(..., alias="id")
     tenant_id: str
-    costumer_id: str
+    customer_id: str
     type: str
     author: str
     content: str

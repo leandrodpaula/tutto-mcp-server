@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from bson import ObjectId
@@ -12,16 +12,18 @@ class PlanRepository:
         self.collection = db["plans"]
 
     def _map_doc(self, doc: dict) -> Optional[dict]:
-        if doc:
-            doc["id"] = str(doc["_id"])
-        return doc
+        if not doc:
+            return None
+        mapped = dict(doc)
+        mapped["id"] = str(mapped["_id"])
+        return mapped
 
     async def create(self, plan: PlanCreate) -> dict:
         plan_dict = plan.model_dump()
-        plan_dict["created_at"] = datetime.utcnow()
-        plan_dict["updated_at"] = datetime.utcnow()
+        plan_dict["created_at"] = datetime.now(timezone.utc)
+        plan_dict["updated_at"] = datetime.now(timezone.utc)
         plan_dict["price_history"] = [
-            {"price": plan.price, "changed_at": datetime.utcnow(), "reason": "Initial price"}
+            {"price": plan.price, "changed_at": datetime.now(timezone.utc), "reason": "Initial price"}
         ]
         result = await self.collection.insert_one(plan_dict)
         doc = await self.collection.find_one({"_id": result.inserted_id})
@@ -64,14 +66,14 @@ class PlanRepository:
         if "price" in update_data and update_data["price"] != current.get("price"):
             history_entry = {
                 "price": update_data["price"],
-                "changed_at": datetime.utcnow(),
+                "changed_at": datetime.now(timezone.utc),
                 "reason": change_reason or "Price update",
             }
             await self.collection.update_one(
                 {"_id": ObjectId(plan_id)}, {"$push": {"price_history": history_entry}}
             )
 
-        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_at"] = datetime.now(timezone.utc)
 
         await self.collection.update_one({"_id": ObjectId(plan_id)}, {"$set": update_data})
 

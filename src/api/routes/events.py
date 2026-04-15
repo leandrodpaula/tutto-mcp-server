@@ -1,9 +1,10 @@
 """Rota HTTP para receber eventos de webhooks (Evolution API)."""
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from src.api.deps import get_db
+from src.core.config import settings
 from src.core.logging import get_logger
 from src.models.webhook_event import WebhookEventPayload
 from src.repositories.event_repository import EventRepository
@@ -14,9 +15,15 @@ router = APIRouter(prefix="/webhook", tags=["events"])
 
 @router.post("/events", status_code=status.HTTP_200_OK)
 async def receive_webhook_event(
+    request: Request,
     payload: WebhookEventPayload,
     db: AsyncIOMotorDatabase = Depends(get_db),  # noqa: B008
 ) -> dict:
+    # Validação mínima de origem via API key no header ou no payload
+    api_key = request.headers.get("apikey") or payload.apikey
+    if not api_key or api_key != settings.EVOLUTION_API_KEY:
+        logger.warning(f"Webhook received with invalid apikey from {request.client.host if request.client else 'unknown'}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
     """Recebe eventos de webhook (mensagens, QR code, etc.) e persiste no MongoDB.
 
     Eventos suportados incluem MESSAGES_UPSERT, QRCODE_UPDATED, CONNECTION_UPDATE,

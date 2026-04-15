@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from bson import ObjectId
@@ -12,15 +12,17 @@ class ScheduleRepository:
         self.collection = db["schedules"]
 
     def _map_doc(self, doc: dict) -> Optional[dict]:
-        if doc:
-            doc["id"] = str(doc["_id"])
-        return doc
+        if not doc:
+            return None
+        mapped = dict(doc)
+        mapped["id"] = str(mapped["_id"])
+        return mapped
 
     async def create(self, schedule: ScheduleCreate) -> dict:
         schedule_dict = schedule.model_dump()
         schedule_dict["status"] = "pending"
-        schedule_dict["created_at"] = datetime.utcnow()
-        schedule_dict["updated_at"] = datetime.utcnow()
+        schedule_dict["created_at"] = datetime.now(timezone.utc)
+        schedule_dict["updated_at"] = datetime.now(timezone.utc)
         result = await self.collection.insert_one(schedule_dict)
         doc = await self.collection.find_one({"_id": result.inserted_id})
         mapped = self._map_doc(doc)
@@ -42,7 +44,7 @@ class ScheduleRepository:
         if not update_data:
             return await self.get_by_id(schedule_id)
 
-        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_at"] = datetime.now(timezone.utc)
 
         await self.collection.update_one({"_id": ObjectId(schedule_id)}, {"$set": update_data})
 

@@ -1,6 +1,5 @@
 from typing import Literal, Optional
 
-from bson import ObjectId
 from fastmcp import FastMCP
 
 from src.core.database import get_database
@@ -8,7 +7,7 @@ from src.core.logging import get_logger
 
 logger = get_logger(__name__)
 from src.models.instruction import InstructionCreate
-from src.models.tenant import TenantCreate
+from src.models.tenant import TenantCreate, TenantUpdate
 from src.repositories.instruction_repository import InstructionRepository
 from src.repositories.tenant_repository import TenantRepository
 from src.services.instruction_service import InstructionService
@@ -107,42 +106,18 @@ def register_tenant_tools(mcp: FastMCP) -> None:
             repo = TenantRepository(db)
             service = TenantService(repo)
 
-            # Since TenantCreate requires mandatory fields, we need a different approach
-            # for update or use Optional fields in a separate Update model.
-            # I'll check if TenantUpdate exists.
-
-            # For now, I'll implement a simple update dict
-            update_data = {}
-            if establishment_name:
-                update_data["establishment_name"] = establishment_name
-            if phone:
-                update_data["phone"] = phone
-            if cpf_cnpj:
-                # Validate if provided
-
-                # We can't easily validate without a full model instance if we use field_validator
-                # But we can try to create a dummy instance or use the validator directly.
-                # Simplest: let the service handle it if we add an update method.
-                update_data["cpf_cnpj"] = cpf_cnpj
-            if business_address:
-                update_data["business_address"] = business_address
-            if responsible_name:
-                update_data["responsible_name"] = responsible_name
-            if responsible_email:
-                update_data["responsible_email"] = responsible_email
-            if business_name:
-                update_data["business_name"] = business_name
-            if domain:
-                update_data["domain"] = domain
-
-            # I need to add an 'update_tenant' method to TenantService
-            result = await service.repository.collection.update_one(
-                {"_id": ObjectId(tenant_id)}, {"$set": update_data}
+            update = TenantUpdate(
+                establishment_name=establishment_name,
+                phone=phone,
+                cpf_cnpj=cpf_cnpj,
+                business_address=business_address,
+                responsible_name=responsible_name,
+                responsible_email=responsible_email,
+                business_name=business_name,
+                domain=domain,
             )
 
-            if result.modified_count == 0:
-                return "No changes made to the tenant."
-
+            updated = await service.update_tenant(tenant_id, update)
             return f"Tenant {tenant_id} updated successfully."
         except Exception as e:
             logger.error(f"Error updating tenant {tenant_id}: {str(e)}")

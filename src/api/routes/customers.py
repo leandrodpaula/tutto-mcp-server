@@ -1,9 +1,8 @@
 """Rotas HTTP para cadastro e consulta de Customers."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from src.api.auth import require_auth, require_customer_auth
 from motor.motor_asyncio import AsyncIOMotorDatabase
-
-from src.api.customer_auth import require_customer_auth
 from src.api.deps import get_db
 from src.core.logging import get_logger
 from src.models.customer import CustomerCreate, CustomerOut
@@ -14,10 +13,11 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/customers", tags=["customers"])
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def register_customer(
     payload: CustomerCreate,
     db: AsyncIOMotorDatabase = Depends(get_db),  # noqa: B008
+    identity: dict = Depends(require_auth),  # noqa: B008
 ) -> dict:
     """Cadastra um novo customer vinculado a um tenant."""
     try:
@@ -38,8 +38,8 @@ async def register_customer(
         ) from exc
 
 
-@router.get("/me")
-async def get_customer_me(
+@router.get("/")
+async def get_customer(
     customer: dict = Depends(require_customer_auth),  # noqa: B008
 ) -> dict:
     """Retorna o profile do customer autenticado via JWT."""

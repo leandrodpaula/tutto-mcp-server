@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -13,7 +13,7 @@ class CouponCreate(BaseModel):
         None, json_schema_extra={"example": "30 dias gratuitos para novos tenants"}
     )
     ttl: int = Field(..., json_schema_extra={"example": 30})
-    start_date: datetime = Field(default_factory=datetime.utcnow)
+    start_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     end_date: Optional[datetime] = Field(None)
     is_active: bool = Field(True)
 

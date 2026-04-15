@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -11,17 +11,19 @@ class SubscriptionRepository:
         self.collection = db["subscriptions"]
 
     def _map_doc(self, doc: dict) -> Optional[dict]:
-        if doc:
-            doc["id"] = str(doc["_id"])
-        return doc
+        if not doc:
+            return None
+        mapped = dict(doc)
+        mapped["id"] = str(mapped["_id"])
+        return mapped
 
     async def create(self, subscription: SubscriptionCreate) -> dict:
         sub_dict = subscription.model_dump()
-        sub_dict["created_at"] = datetime.utcnow()
-        sub_dict["updated_at"] = datetime.utcnow()
+        sub_dict["created_at"] = datetime.now(timezone.utc)
+        sub_dict["updated_at"] = datetime.now(timezone.utc)
         sub_dict["is_active"] = True
         if sub_dict.get("starts_at") is None:
-            sub_dict["starts_at"] = datetime.utcnow()
+            sub_dict["starts_at"] = datetime.now(timezone.utc)
         result = await self.collection.insert_one(sub_dict)
         doc = await self.collection.find_one({"_id": result.inserted_id})
         mapped = self._map_doc(doc)
@@ -46,7 +48,7 @@ class SubscriptionRepository:
         if not update_data:
             return await self.get_by_tenant(tenant_id, is_active=True)
 
-        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_at"] = datetime.now(timezone.utc)
 
         await self.collection.update_one({"tenant_id": tenant_id}, {"$set": update_data})
 

@@ -4,7 +4,7 @@ from src.core.logging import get_logger
 from src.models.subscription import SubscriptionCreate, SubscriptionUpdate
 
 logger = get_logger(__name__)
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.repositories.subscription_repository import SubscriptionRepository
 from src.repositories.tenant_repository import TenantRepository
@@ -58,7 +58,7 @@ class SubscriptionService:
 
         # Handle start and expiration dates based on type
         if not subscription.starts_at:
-            subscription.starts_at = datetime.utcnow()
+            subscription.starts_at = datetime.now(timezone.utc)
 
         if not subscription.expires_at:
             if subscription.type == "monthly":
@@ -142,7 +142,7 @@ class SubscriptionService:
 
         # If type is being updated, recalculate expires_at from starts_at
         if subscription_update.type:
-            starts_at = existing.get("starts_at") or datetime.utcnow()
+            starts_at = existing.get("starts_at") or datetime.now(timezone.utc)
             if subscription_update.type == "monthly":
                 subscription_update.expires_at = starts_at + timedelta(days=30)
             elif subscription_update.type == "annual":

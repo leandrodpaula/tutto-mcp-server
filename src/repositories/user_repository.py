@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from bson import ObjectId
@@ -12,15 +12,17 @@ class UserRepository:
         self.collection = db["users"]
 
     def _map_doc(self, doc: dict) -> Optional[dict]:
-        if doc:
-            doc["id"] = str(doc["_id"])
-        return doc
+        if not doc:
+            return None
+        mapped = dict(doc)
+        mapped["id"] = str(mapped["_id"])
+        return mapped
 
     async def create(self, user: UserCreate) -> dict:
         user_dict = user.model_dump()
         user_dict["is_active"] = True
-        user_dict["created_at"] = datetime.utcnow()
-        user_dict["updated_at"] = datetime.utcnow()
+        user_dict["created_at"] = datetime.now(timezone.utc)
+        user_dict["updated_at"] = datetime.now(timezone.utc)
         result = await self.collection.insert_one(user_dict)
         doc = await self.collection.find_one({"_id": result.inserted_id})
         mapped = self._map_doc(doc)
@@ -46,7 +48,7 @@ class UserRepository:
         if not update_data:
             return await self.get_by_id(user_id)
 
-        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_at"] = datetime.now(timezone.utc)
 
         await self.collection.update_one({"_id": ObjectId(user_id)}, {"$set": update_data})
 

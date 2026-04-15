@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
 from src.models.coupon import CouponCreate, CouponUpdate
@@ -31,7 +31,7 @@ class CouponService:
         if not coupon.get("is_active"):
             raise CouponServiceError(f"Coupon {short_code} is inactive")
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         if coupon.get("start_date") > now:
             raise CouponServiceError(f"Coupon {short_code} is not yet valid")
 

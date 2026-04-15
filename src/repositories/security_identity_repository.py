@@ -10,10 +10,12 @@ class SecurityIdentityRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["security_identities"]
 
-    def _map_doc(self, doc: Optional[dict]) -> Optional[dict]:
-        if doc:
-            doc["id"] = str(doc.pop("_id"))
-        return doc
+    def _map_doc(self, doc: dict) -> Optional[dict]:
+        if not doc:
+            return None
+        mapped = dict(doc)
+        mapped["id"] = str(mapped.pop("_id"))
+        return mapped
 
     async def find_by_client_id(self, client_id: str) -> Optional[dict]:
         doc = await self.collection.find_one({"credentials.client_id": client_id})

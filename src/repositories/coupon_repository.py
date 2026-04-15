@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from bson import ObjectId
@@ -12,14 +12,16 @@ class CouponRepository:
         self.collection = db["coupons"]
 
     def _map_doc(self, doc: dict) -> Optional[dict]:
-        if doc:
-            doc["id"] = str(doc["_id"])
-        return doc
+        if not doc:
+            return None
+        mapped = dict(doc)
+        mapped["id"] = str(mapped["_id"])
+        return mapped
 
     async def create(self, coupon: CouponCreate) -> dict:
         coupon_dict = coupon.model_dump()
-        coupon_dict["created_at"] = datetime.utcnow()
-        coupon_dict["updated_at"] = datetime.utcnow()
+        coupon_dict["created_at"] = datetime.now(timezone.utc)
+        coupon_dict["updated_at"] = datetime.now(timezone.utc)
         result = await self.collection.insert_one(coupon_dict)
         doc = await self.collection.find_one({"_id": result.inserted_id})
         mapped = self._map_doc(doc)
@@ -38,7 +40,7 @@ class CouponRepository:
         return self._map_doc(doc)
 
     async def list_active(self) -> List[dict]:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         cursor = self.collection.find(
             {
                 "is_active": True,
@@ -57,7 +59,7 @@ class CouponRepository:
         if not update_data:
             return await self.get_by_id(coupon_id)
 
-        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_at"] = datetime.now(timezone.utc)
 
         await self.collection.update_one({"_id": ObjectId(coupon_id)}, {"$set": update_data})
 

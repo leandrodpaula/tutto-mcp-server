@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Union
 
 from bson import ObjectId
@@ -12,14 +12,17 @@ class InstructionRepository:
         # Using the same collection name as user did for services to potentially migrate or just follow his lead
         self.collection = db["tenants_instructions"]
 
-    def _map_doc(self, doc: dict) -> dict:
-        doc["id"] = str(doc["_id"])
-        return doc
+    def _map_doc(self, doc: dict) -> Optional[dict]:
+        if not doc:
+            return None
+        mapped = dict(doc)
+        mapped["id"] = str(mapped["_id"])
+        return mapped
 
     async def create(self, instruction: InstructionCreate) -> dict:
         instruction_dict = instruction.model_dump()
-        instruction_dict["created_at"] = datetime.utcnow()
-        instruction_dict["updated_at"] = datetime.utcnow()
+        instruction_dict["created_at"] = datetime.now(timezone.utc)
+        instruction_dict["updated_at"] = datetime.now(timezone.utc)
         instruction_dict["is_active"] = True
         result = await self.collection.insert_one(instruction_dict)
         doc = await self.collection.find_one({"_id": result.inserted_id})
@@ -45,7 +48,7 @@ class InstructionRepository:
         else:
             update_data = instruction
 
-        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_at"] = datetime.now(timezone.utc)
 
         result = await self.collection.update_one(
             {"_id": ObjectId(instruction_id)}, {"$set": update_data}

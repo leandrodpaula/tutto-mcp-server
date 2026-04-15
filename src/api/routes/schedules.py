@@ -89,6 +89,7 @@ async def list_schedules(
 @router.get("/{schedule_id}")
 async def get_schedule(
     schedule_id: str,
+    tenant_id: str = Query(..., description="ID do tenant do agendamento"),  # noqa: B008
     db: AsyncIOMotorDatabase = Depends(get_db),  # noqa: B008
 ) -> dict:
     """Retorna os detalhes de um agendamento."""
@@ -96,6 +97,11 @@ async def get_schedule(
         repo = ScheduleRepository(db)
         service = ScheduleService(repo)
         schedule = await service.get_schedule(schedule_id)
+        if schedule.get("tenant_id") != tenant_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Schedule not found for this tenant",
+            )
         return {
             "schedule": ScheduleOut(**schedule).model_dump(by_alias=True),
         }

@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 def register_message_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def create_pending_message(
-        tenant_id: str, costumer_id: str, type: str, author: Literal["system", "user"], content: str
+        tenant_id: str, customer_id: str, type: str, author: Literal["system", "user"], content: str
     ) -> str:
         """
         Adiciona uma nova mensagem ao banco de dados com o status de
@@ -22,7 +22,7 @@ def register_message_tools(mcp: FastMCP) -> None:
 
         Args:
             tenant_id: O ID do tenant.
-            costumer_id: O ID do cliente.
+            customer_id: O ID do cliente.
             type: O tipo de mensagem (text, img, video, audio).
             author: O autor da mensagem (system ou user).
             content: O conteúdo da mensagem em texto.
@@ -40,7 +40,7 @@ def register_message_tools(mcp: FastMCP) -> None:
 
             message_in = MessageCreate(
                 tenant_id=tenant_id,
-                costumer_id=costumer_id,
+                customer_id=customer_id,
                 type=type,
                 author=author,
                 content=content,
@@ -52,5 +52,5 @@ def register_message_tools(mcp: FastMCP) -> None:
                 f"ID: {message_out['id']}"
             )
         except Exception as e:
-            logger.error(f"Error creating pending message for costumer {costumer_id}: {str(e)}")
+            logger.error(f"Error creating pending message for customer {customer_id}: {str(e)}")
             raise

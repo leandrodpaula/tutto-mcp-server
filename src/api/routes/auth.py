@@ -1,4 +1,4 @@
-"""Rota de autenticação unificada para serviços (Basic) e customers (Google OAuth)."""
+"""Rota de autenticação unificada para serviços (client_id/client_secret) e customers (Google OAuth)."""
 
 import base64
 import json
@@ -11,7 +11,7 @@ from fastapi.responses import RedirectResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel, Field
 
-from src.api.customer_auth import create_access_token, create_refresh_token, decode_token
+from src.api.auth import create_access_token, create_refresh_token, decode_token
 from src.api.deps import get_db
 from src.core.config import settings
 from src.core.database import get_database
@@ -64,8 +64,7 @@ async def authenticate(
                 detail="client_id and client_secret are required for grant_type='service'",
             )
 
-        service_db = get_database()
-        auth_service = AuthService(service_db)
+        auth_service = AuthService(db)
         try:
             identity = await auth_service.authenticate(
                 client_id=payload.client_id,
@@ -81,7 +80,7 @@ async def authenticate(
         token_data = {"sub": str(identity.get("_id") or identity.get("id")), "type": "service"}
         access_token = create_access_token(data=token_data, expires_delta=access_token_expires)
         refresh_token = create_refresh_token(data=token_data)
-        refresh_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        refresh_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -129,7 +128,7 @@ async def authenticate(
         token_data = {"sub": customer["id"], "type": "customer"}
         access_token = create_access_token(data=token_data, expires_delta=access_token_expires)
         refresh_token = create_refresh_token(data=token_data)
-        refresh_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        refresh_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -176,7 +175,7 @@ async def authenticate(
             expires_delta=access_token_expires,
         )
         new_refresh_token = create_refresh_token(data={"sub": subject, "type": token_type_claim})
-        refresh_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        refresh_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
         return {
             "access_token": new_access_token,
             "token_type": "bearer",

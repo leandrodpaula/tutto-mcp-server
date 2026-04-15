@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional
 
 from bson import ObjectId
@@ -11,12 +12,17 @@ class TenantRepository:
         self.collection = db["tenants"]
 
     def _map_doc(self, doc: dict) -> Optional[dict]:
-        if doc:
-            doc["id"] = str(doc["_id"])
-        return doc
+        if not doc:
+            return None
+        mapped = dict(doc)
+        mapped["id"] = str(mapped["_id"])
+        return mapped
 
     async def create(self, tenant: TenantCreate) -> dict:
         tenant_dict = tenant.model_dump()
+        now = datetime.now(timezone.utc)
+        tenant_dict["created_at"] = now
+        tenant_dict["updated_at"] = now
         result = await self.collection.insert_one(tenant_dict)
         doc = await self.collection.find_one({"_id": result.inserted_id})
         mapped = self._map_doc(doc)
@@ -38,11 +44,13 @@ class TenantRepository:
         doc = await self.collection.find_one({"token": token})
         return self._map_doc(doc)
 
+    async def get_by_cpf_cnpj(self, cpf_cnpj: str) -> Optional[dict]:
+        doc = await self.collection.find_one({"cpf_cnpj": cpf_cnpj})
+        return self._map_doc(doc)
+
     async def update(self, tenant_id: str, data: dict) -> Optional[dict]:
         if not ObjectId.is_valid(tenant_id):
             return None
-        from datetime import datetime, timezone
-
         data["updated_at"] = datetime.now(timezone.utc)
         await self.collection.update_one({"_id": ObjectId(tenant_id)}, {"$set": data})
         return await self.get_by_id(tenant_id)

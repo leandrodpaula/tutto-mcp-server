@@ -10,10 +10,12 @@ class EventRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.collection = db["events"]
 
-    def _map_doc(self, doc: Optional[dict]) -> Optional[dict]:
-        if doc:
-            doc["id"] = str(doc.pop("_id"))
-        return doc
+    def _map_doc(self, doc: dict) -> Optional[dict]:
+        if not doc:
+            return None
+        mapped = dict(doc)
+        mapped["id"] = str(mapped.pop("_id"))
+        return mapped
 
     async def create_webhook_event(
         self,

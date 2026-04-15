@@ -53,17 +53,15 @@ src/
 │   ├── deps.py        # Dependências reutilizáveis (get_db)
 │   └── routes/        # Routers (health, messages, etc.)
 ├── mcp/               # Camada MCP (registro de tools)
-├── mcp_server.py      # Instância FastMCP pura
-└── main.py            # FastAPI app principal + mount do MCP
+└── main.py            # FastAPI app principal + registro de tools MCP
 
 terraform/             # IaC para GCP (Cloud Run, Artifact Registry, Secret Manager)
 .github/workflows/     # Pipeline CI/CD
 ```
 
-### Separação MCP × FastAPI
+### Estrutura do Servidor
 
-- **`src/mcp_server.py`**: contém apenas o objeto `FastMCP` e o registro das tools. Não possui lifespan próprio nem rotas HTTP.
-- **`src/main.py`**: cria o app `FastAPI`, registra os routers HTTP e monta o MCP como sub-app ASGI em `/mcp` via `mcp.http_app()`.
+- **`src/main.py`**: Ponto de entrada que cria o app `FastAPI`, configura o objeto `FastMCP`, registra todas as tools e monta o MCP como sub-app ASGI em `/mcp` via `mcp.http_app()`.
 - **`src/core/lifespan.py`**: lifespan compartilhado entre FastAPI e MCP para gerenciar a conexão com o MongoDB.
 
 ---
@@ -239,15 +237,12 @@ mypy src/
 
 ## 🏛️ Decisões de Arquitetura (ADR)
 
-### Por que separar MCP e FastAPI?
+### Arquitetura Unificada
 
-Inicialmente as rotas HTTP eram registradas diretamente no `FastMCP` via `@mcp.custom_route()`. Para manter a arquitetura limha e permitir que a camada HTTP evolua independentemente do protocolo MCP, extraímos:
+O projeto utiliza o `FastAPI` como servidor principal, que monta o `FastMCP` como um sub-app ASGI em `/mcp`. Isso permite que o servidor responda tanto a requisições HTTP REST quanto ao protocolo MCP no mesmo processo.
 
-- `src/mcp_server.py` → responsável apenas pelo MCP.
-- `src/main.py` → app FastAPI que monta o MCP em `/mcp` e gerencia os routers HTTP.
-- `src/core/lifespan.py` → lifespan compartilhado, garantindo que o MongoDB seja conectado uma única vez, independentemente de quem iniciar primeiro (FastAPI ou MCP sub-app).
-
-Isso facilita testes, manutenção e futuras expansões da API REST sem poluir o domínio MCP.
+- `src/main.py` → Concentra a configuração do app FastAPI e a instância do MCP.
+- `src/core/lifespan.py` → Lifespan compartilhado que garante uma única conexão com o MongoDB para ambas as camadas.
 
 ---
 

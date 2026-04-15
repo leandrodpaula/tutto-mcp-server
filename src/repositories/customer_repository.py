@@ -10,9 +10,11 @@ class CustomerRepository:
         self.collection = db["customers"]
 
     def _map_doc(self, doc: dict) -> Optional[dict]:
-        if doc:
-            doc["id"] = str(doc["_id"])
-        return doc
+        if not doc:
+            return None
+        mapped = dict(doc)
+        mapped["id"] = str(mapped["_id"])
+        return mapped
 
     async def create(self, data: dict) -> dict:
         now = datetime.now(timezone.utc)

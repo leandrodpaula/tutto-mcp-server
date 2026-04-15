@@ -6,7 +6,7 @@ from src.core.database import get_database
 from src.core.logging import get_logger
 
 logger = get_logger(__name__)
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.models.coupon import CouponCreate, CouponUpdate
 from src.repositories.coupon_repository import CouponRepository
@@ -41,7 +41,7 @@ def register_coupon_tools(mcp: FastMCP) -> None:
             repo = CouponRepository(db)
             service = CouponService(repo)
 
-            parsed_start = datetime.fromisoformat(start_date) if start_date else datetime.utcnow()
+            parsed_start = datetime.fromisoformat(start_date) if start_date else datetime.now(timezone.utc)
             parsed_end = datetime.fromisoformat(end_date) if end_date else None
 
             coupon_in = CouponCreate(

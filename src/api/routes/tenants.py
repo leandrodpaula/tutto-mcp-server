@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from src.api.customer_auth import require_customer_auth
+from src.api.auth import require_customer_auth
 from src.api.deps import get_db
 from src.core.config import settings
 from src.core.logging import get_logger
